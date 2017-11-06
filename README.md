@@ -11,7 +11,8 @@ Some people used to say that the Internet video streaming is the future of the t
 
 If you show a series of images in a given frequency, let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision), in summary this is the very basic idea behind a video, **a series of pictures / frames running at a given rate**.
 
-![flip book](https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg "flip book")
+<img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
+
 Zeitgenössische Illustration (1886)
 
 ## audio - what you listen!
