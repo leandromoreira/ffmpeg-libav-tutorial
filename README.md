@@ -153,7 +153,7 @@ Usually we'll be using transrating with transsizing. Werner Robitza wrote anothe
 
 ## Transsizing
 
-![transsizing](/img/transrating.png)
+![transsizing](/img/transsizing.png)
 
 **What?** the act of converting from one resolution to another one, as said before transsizing is often used with transrating.
 
