@@ -59,11 +59,108 @@ A **single file that contains all the streams** (mostly the audio and video) and
 
 # FFmpeg - command line
 
+> A complete, cross-platform solution to record, convert and stream audio and video.
+
+To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/), chances are you know / use directly or indirectly (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)) this great solution.
+
+It has a command line program called `ffmpeg`, it's a very simple yet powerful program. For instance, you can convert from `mp4` to the container `avi` just by typing the follow command.
+
+```bash
+$ ffmpeg -i input.mp4 output.avi
+```
+
+## FFmpeg command line tool 101
+
+FFmpeg does have [documentation](https://www.ffmpeg.org/ffmpeg.html) that explains greatly how it works. To make things short the FFmpeg command line program expects the following argument format to perform actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
+
+1. global options
+2. input file options
+3. input url
+4. output file options
+5. output url
+
+The parts 2, 3, 4 and 5 can be as many as you need. It's easier to understand this argument format in action:
+
+``` bash
+$ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
+
+$ ffmpeg \
+-y \ # global options
+-c:a libfdk_aac -c:v libx264 \ # input options
+-i bunny_1080p_60fps.mp4 \ # input url
+-c:v libvpx-vp9 -c:a libvorbis \ # output options
+bunny_1080p_60fps_vp9.webm # output url
+```
+This command basically takes a `mp4` containing two streams, an audio encoded with `aac` CODEC and a video encoded using `h264` CODEC and convert it to `webm` changing its audio and video CODECs too.
+
+We could simplify the command above but then be aware that FFmpeg will adopt or guess the default values for you, for instance when you just type `ffmpeg -i input.avi output.mp4` what audio/video CODEC does it use to produce the `output.mp4`?
+
+Werner Robitza wrote a must read/execute [tutorial about encoding and editing with FFmpeg](http://slhck.info/ffmpeg-encoding-course/#/).
+
 # Common video operations
 
+While working with audio/video we usually do a set of tasks with the media.
+
 ## Transcoding
+
+**What?** the act of converting one of the streams (audio or video) from one CODEC to another one.
+
+**Why?** sometimes some devices (TVs, smart phones, console and etc) doesn't support X but Y and newer CODECs provide better compression rate.
+
+**How?** converting an `H264` (AVC) video to an `H265` (HEVC).
+```bash
+$ ffmpeg \
+-i bunny_1080p_60fps.mp4 \
+-c:v libx265 \
+bunny_1080p_60fps_h265.mp4
+```
+
 ## Transmuxing
+
+**What?** the act of converting from one format (container) to another one.
+
+**Why?** sometimes some devices (TVs, smart phones, console and etc) doesn't support X but Y and sometimes newer containers provide modern required features.
+
+**How?** converting a `mp4` to a `mkv` (matroska).
+```bash
+$ ffmpeg \
+-i bunny_1080p_60fps.mp4 \
+-c copy \ # just saying to ffmpeg to skip encoding
+bunny_1080p_60fps.mkv
+```
+
 ## Transrating
+
+**What?** the act of changing the bit rate, or producing other renditions.
+
+**Why?** people will try to watch your video in a `2G` (edge) connection using a less powerful smart phone or in a `fiber` Internet connection on their 4K TVs therefore you should offer more than on rendition of the same video with different bit rate.
+
+**How?** producing a rendition with bit rate between 3856K and 2000K.
+```bash
+$ ffmpeg \
+-i bunny_1080p_60fps.mp4 \
+-minrate 964K -maxrate 3856K -bufsize 2000K \
+bunny_1080p_60fps_transrating_964_3856.mp4
+```
+
+Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate controls](http://slhck.info/posts/).
+
 ## Transsizing
+
+**What?** the act of converting from one resolution to another one, as said before transsizing is often used with transrating.
+
+**Why?** reasons are about the same as for the transrating.
+
+**How?** converting a `1080p` to a `480p` resolution.
+```bash
+$ ffmpeg \
+-i bunny_1080p_60fps.mp4 \
+-vf scale=480:-1 \
+bunny_1080p_60fps_transsizing_480.mp4
+```
+
+## Going beyond
+
+There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly), I use it in conjunction with *iMovie* to produce/edit some videos for YouTube, you can certainly use it professionally.
 
 # Libav - hello world
