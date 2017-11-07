@@ -5,7 +5,7 @@
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
 
-I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (libav*) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
+I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
 
 Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like: [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
 
