@@ -103,6 +103,8 @@ While working with audio/video we usually do a set of tasks with the media.
 
 ## Transcoding
 
+![transcoding](/img/transcoding.png)
+
 **What?** the act of converting one of the streams (audio or video) from one CODEC to another one.
 
 **Why?** sometimes some devices (TVs, smart phones, console and etc) doesn't support X but Y and newer CODECs provide better compression rate.
@@ -117,19 +119,23 @@ bunny_1080p_60fps_h265.mp4
 
 ## Transmuxing
 
+![transmuxing](/img/transmuxing.png)
+
 **What?** the act of converting from one format (container) to another one.
 
 **Why?** sometimes some devices (TVs, smart phones, console and etc) doesn't support X but Y and sometimes newer containers provide modern required features.
 
-**How?** converting a `mp4` to a `mkv` (matroska).
+**How?** converting a `mp4` to a `webm`.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
 -c copy \ # just saying to ffmpeg to skip encoding
-bunny_1080p_60fps.mkv
+bunny_1080p_60fps.webm
 ```
 
 ## Transrating
+
+![transrating](/img/transrating.png)
 
 **What?** the act of changing the bit rate, or producing other renditions.
 
@@ -146,6 +152,8 @@ bunny_1080p_60fps_transrating_964_3856.mp4
 Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate controls](http://slhck.info/posts/).
 
 ## Transsizing
+
+![transsizing](/img/transrating.png)
 
 **What?** the act of converting from one resolution to another one, as said before transsizing is often used with transrating.
 
