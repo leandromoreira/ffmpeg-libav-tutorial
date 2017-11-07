@@ -1,11 +1,17 @@
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
-# Sound and Vision
+# Intro
 
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
 
-Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the core of this evolution worths to be studied.
+I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (libav*) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
+
+Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like: [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
+
+We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `ffmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Hello World FFmpeg Libav.](#libav---hello-world)
+
+Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that worths to be studied.
 
 ## video - what you see!
 
@@ -149,7 +155,7 @@ $ ffmpeg \
 bunny_1080p_60fps_transrating_964_3856.mp4
 ```
 
-Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate controls](http://slhck.info/posts/).
+Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate control](http://slhck.info/posts/).
 
 ## Transsizing
 
