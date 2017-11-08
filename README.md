@@ -12,7 +12,7 @@ Some people used to say that the Internet video streaming is the future of the t
 
 ## video - what you see!
 
-If you show a series of images in a given frequency, let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision), in summary this is the very basic idea behind a video, **a series of pictures / frames running at a given rate**.
+If you have a sequence series of images and change them at a given frequency, let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision), in summary this is the very basic idea behind a video, **a series of pictures / frames running at a given rate**.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
 
@@ -62,17 +62,19 @@ A **single file that contains all the streams** (mostly the audio and video) and
 
 > A complete, cross-platform solution to record, convert and stream audio and video.
 
-To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/), chances are you know / use directly or indirectly (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)) this great solution.
+To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/), chances are you know / use directly or indirectly it. (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)).
 
-It has a command line program called `ffmpeg`, it's a very simple yet powerful program. For instance, you can convert from `mp4` to the container `avi` just by typing the follow command.
+It has a command line program called `ffmpeg`, it's a very simple yet powerful binary. For instance, you can convert from `mp4` to the container `avi` just by typing the follow command.
 
 ```bash
 $ ffmpeg -i input.mp4 output.avi
 ```
 
+We just made a **remuxing** which is converting from one container to another one, technically here FFmpeg could be also be doing a transcoding but we'll talk about that later.
+
 ## FFmpeg command line tool 101
 
-FFmpeg does have [documentation](https://www.ffmpeg.org/ffmpeg.html) that explains greatly how it works. To make things short the FFmpeg command line program expects the following argument format to perform actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
+FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that explains greatly how it works. To make things short the FFmpeg command line program expects the following argument format to perform its actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
 
 1. global options
 2. input file options
@@ -92,7 +94,7 @@ $ ffmpeg \
 -c:v libvpx-vp9 -c:a libvorbis \ # output options
 bunny_1080p_60fps_vp9.webm # output url
 ```
-This command basically takes a `mp4` containing two streams, an audio encoded with `aac` CODEC and a video encoded using `h264` CODEC and convert it to `webm` changing its audio and video CODECs too.
+This command takes an input file `mp4` containing two streams, an audio encoded with `aac` CODEC and a video encoded using `h264` CODEC and convert it to `webm` changing its audio and video CODECs too.
 
 We could simplify the command above but then be aware that FFmpeg will adopt or guess the default values for you, for instance when you just type `ffmpeg -i input.avi output.mp4` what audio/video CODEC does it use to produce the `output.mp4`?
 
@@ -167,6 +169,46 @@ $ ffmpeg \
 -vf scale=480:-1 \
 bunny_1080p_60fps_transsizing_480.mp4
 ```
+
+## Bonus Round: Adaptive Streaming
+
+![adaptive streaming](/img/adaptive-streaming.png)
+
+**What?** the act of producing many resolutions (bit rates) and split the media into chunks and serve them via http.
+
+**Why?** to provide a flexible media that can be watched on a low end smart phone or on a 4K TV, it's also easy to scale and deploy but it can add latency.
+
+**How?** creating an adaptive WebM using DASH.
+```bash
+# video streams
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 160x90 -b:v 250k -keyint_min 150 -g 150 -an -f webm -dash 1 video_160x90_250k.webm
+
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 320x180 -b:v 500k -keyint_min 150 -g 150 -an -f webm -dash 1 video_320x180_500k.webm
+
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 640x360 -b:v 750k -keyint_min 150 -g 150 -an -f webm -dash 1 video_640x360_750k.webm
+
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 640x360 -b:v 1000k -keyint_min 150 -g 150 -an -f webm -dash 1 video_640x360_1000k.webm
+
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 1280x720 -b:v 1500k -keyint_min 150 -g 150 -an -f webm -dash 1 video_1280x720_1500k.webm
+
+# audio streams
+$ ffmpeg -i bunny_1080p_60fps.mp4 -c:a libvorbis -b:a 128k -vn -f webm -dash 1 audio_128k.webm
+
+# the DASH manifest
+$ ffmpeg \
+ -f webm_dash_manifest -i video_160x90_250k.webm \
+ -f webm_dash_manifest -i video_320x180_500k.webm \
+ -f webm_dash_manifest -i video_640x360_750k.webm \
+ -f webm_dash_manifest -i video_640x360_1000k.webm \
+ -f webm_dash_manifest -i video_1280x720_500k.webm \
+ -f webm_dash_manifest -i audio_128k.webm \
+ -c copy -map 0 -map 1 -map 2 -map 3 -map 4 -map 5 \
+ -f webm_dash_manifest \
+ -adaptation_sets "id=0,streams=0,1,2,3,4 id=1,streams=5" \
+ manifest.mpd
+```
+
+PS: I stole this example from the [Instructions to playback Adaptive WebM using DASH](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)
 
 ## Going beyond
 
