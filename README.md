@@ -237,17 +237,17 @@ But before we start to code, let's learn how **FFmpeg libav architecture** works
 
 ![ffmpeg libav architecture - decoding process](/img/decoding.png)
 
-You'll first need to load your media file into a component called `AVFormatContext` (the video container is also known as format), it actually doesn't fully load the whole file, it only loads the header.
+You'll first need to load your media file into a component called [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (the video container is also known as format), it actually doesn't fully load the whole file, it often only reads the header.
 
-Once we loaded the minimal header of our container we can access its streams, think of them as a rudimentary audio and video data. Each stream will be available in a component called `AVStream`.
+Once we loaded the minimal **header of our container** we can access its streams, think of them as a rudimentary audio and video data. Each stream will be available in a component called [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 > Stream is a fancy name for a continuous flow of data.
 
-Suppose our video has two streams: an audio encoded with AAC CODEC and a video encoded with H264 CODEC. From each stream we can extract pieces (slices) of data called packets that will be loaded into components named `AVPacket`.
+Suppose our video has two streams: an audio encoded with [AAC CODEC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) and a video encoded with [H264 (AVC) CODEC](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). From each stream we can extract **pieces (slices) of data** called packets that will be loaded into components named [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
 
-The data inside the packets are still coded (compressed) and in order to decode the packets we need to pass them to a specific `AVCodec`.
+The **data inside the packets is still coded** (compressed) and in order to decode the packets we need to pass them to a specific [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html).
 
-The `AVCodec` will decoded them into `AVFrame` and finally this component gives us the uncompressed frame.  Noticed that the same terminology is used either for audio and video stream.
+The `AVCodec` will decoded them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) and finally this component gives us **the uncompressed frame**.  Noticed that the same terminology / process is used either by audio and video stream.
 
 ### Chapter 0 - code walkthrough
 
