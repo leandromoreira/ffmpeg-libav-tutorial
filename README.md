@@ -5,11 +5,11 @@
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
 
-I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
+I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
 
 Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like: [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
 
-We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `ffmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Hello World FFmpeg Libav.](#libav---hello-world)
+We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `ffmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
 
 Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that worths to be studied.
 
@@ -177,4 +177,14 @@ bunny_1080p_60fps_transsizing_480.mp4
 
 There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly), I use it in conjunction with *iMovie* to produce/edit some videos for YouTube, you can certainly use it professionally.
 
-# Libav - hello world
+# Learn FFmpeg libav the Hard Way
+
+Since [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool how can we use (embedded) it in our programs?
+
+It turns out that FFmpeg itself is [composed of several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be used to be integrated into our own programs.
+
+Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to set of these libraries as **FFmpeg livav**.
+
+> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C The Hard Way.
+
+## Chapter 0 - The infamous hello world
