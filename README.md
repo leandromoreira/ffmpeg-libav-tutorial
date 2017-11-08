@@ -2,9 +2,6 @@
 
 # Intro
 
-> Don't you wonder sometimes 'bout sound and vision?
-> **David Robert Jones**
-
 I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
 
 Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like: [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
@@ -58,8 +55,6 @@ This video would requires us a storage of approximately `250.28GB` or a bandwidt
 > https://en.wikipedia.org/wiki/Digital_container_format
 
 A **single file that contains all the streams** (mostly the audio and video) and it also provides **synchronization and general metadata**, such as title, resolution and etc. Usually we can infer the format of a file by looking at its extension, for instance a `video.webm` is probably a video using the container [`webm`](https://www.webmproject.org/).
-
-> Stream is a fancy name for a continuous set of data.
 
 ![container](/img/container.png)
 
@@ -179,12 +174,39 @@ There are [many and many other usages for FFmpeg](https://github.com/leandromore
 
 # Learn FFmpeg libav the Hard Way
 
-Since [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool how can we use (embedded) it in our programs?
+> Don't you wonder sometimes 'bout sound and vision?
+> **David Robert Jones**
+
+Since [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do tons of tasks over media files, how can we use (embedded) it in our programs?
 
 It turns out that FFmpeg itself is [composed of several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be used to be integrated into our own programs.
 
-Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to set of these libraries as **FFmpeg livav**.
+Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to the set of these libraries as **FFmpeg libav**.
 
-> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C The Hard Way.
+> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C the Hard Way.
 
 ## Chapter 0 - The infamous hello world
+
+This hello world actually won't show the message `"hello world"` in the terminal :tongue: instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and in the end we'll **decode some frames and save them as image files**.
+
+### FFmpeg libav architecture
+
+But before we start to code, let's learn how **FFmpeg libav architecture** works, how its components communicate with others. For instance, here's a diagram of a process of decoding a video.
+
+![ffmpeg libav architecture - decoding process](/img/decoding.png)
+
+You'll first need to load your media file into a component called `AVFormatContext` (the video container is also known as format), it actually doesn't fully load the whole file, it only loads the header.
+
+Once we loaded the minimal header of our container we can access its streams, think of them as a rudimentary audio and video data. Each stream will be available in a component called `AVStream`.
+
+> Stream is a fancy name for a continuous flow of data.
+
+Suppose our video has two streams: an audio encoded with AAC CODEC and a video encoded with H264 CODEC. From each stream we can extract pieces (slices) of data called packets that will be loaded into components named `AVPacket`.
+
+The data inside the packets are still coded (compressed) and in order to decode the packets we need to pass them to a specific `AVCodec`.
+
+The `AVCodec` will decoded them into `AVFrame` and finally this component gives us the uncompressed frame.  Noticed that the same terminology is used either for audio and video stream.
+
+### Chapter 0 - code walkthrough
+
+But let's talk code here, we'll skip some details but don't worry the file is available for you to play with it.
