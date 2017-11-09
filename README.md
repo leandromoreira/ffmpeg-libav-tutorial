@@ -251,4 +251,81 @@ The `AVCodec` will decoded them into [`AVFrame`](https://ffmpeg.org/doxygen/trun
 
 ### Chapter 0 - code walkthrough
 
-But let's talk code here, we'll skip some details but don't worry the file is available for you to play with it.
+Before we start to code let's download the [big buck bunny](https://en.wikipedia.org/wiki/Big_Buck_Bunny) annimation that will be used as our source video.
+
+```bash
+$ make download
+$ make cut_smaller_version
+```
+
+We'll skip some details but don't worry the [source code is available at github](/0_hello_world.c). The first thing we need to do is to register all the codecs, formats and protocols, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3).
+
+```c
+av_register_all();
+```
+Now we're going to allocate memory to the component [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) that will hold  information about the format (container).
+
+```c
+AVFormatContext *pFormatContext = avformat_alloc_context();
+```
+
+Open the file and read its header and fill the `AVFormatContext` with minimal information about the format, notice that usually the codecs are not opened. The function used to do this is [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49), it expects an `AVFormatContext`, a `filename` and two optional arguments, the [`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html), if you pass `NULL`, FFmpeg will guess the format and the [`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) which are the options to the demuxer.
+
+```c
+avformat_open_input(&pFormatContext, filename, NULL, NULL);
+```
+
+We can print the format name and the media duration.
+
+```c
+printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
+```
+
+To access the `streams` we need to read data from the media, the function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that, now the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream.
+
+```c
+avformat_find_stream_info(pFormatContext,  NULL);
+```
+
+Now we'll loop through all the streams.
+
+```c
+for (int i = 0; i < pFormatContext->nb_streams; i++)
+{
+  //
+}
+```
+
+For each stream, we're going to keep the [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html) which describes the properties of a codec used by the stream `i`.
+
+```c
+AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+```
+
+With the codec properties we can look up the proper CODEC querying the function [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) and find the registered decoder for the codec id and return an [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html), the component that knows how to en**CO**de and **DEC**ode the stream.
+```c
+AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
+```
+
+Now we can print information about the codecs.
+
+```c
+// specific for video and audio
+if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
+  printf("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
+} else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
+  printf("Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
+}
+// general
+printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pCodecParameters->bit_rate);
+```
+
+With the codec we can allocate memory for the [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html) which will hold the context for our decode/encode process but then we need to fill this codec context with CODEC parameters, we do that with [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16).
+
+Once we fill the codec context we need to open the codec, make it usable, we call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) to do the job.
+
+```c
+AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
+avcodec_parameters_to_context(pCodecContext, pCodecParameters);
+avcodec_open2(pCodecContext, pCodec, NULL);
+```
