@@ -231,10 +231,10 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 
       char frame_filename[1024];
       snprintf(frame_filename, sizeof(frame_filename), "%s-%d.pgm", "frame", pCodecContext->frame_number);
-      logging("Y(0, 112) = %d, U(0, 112) = %d, V(0, 112) = %d", pFrame->data[0][112], pFrame->data[1][112], pFrame->data[2][112]);
+      logging("Y(0, 112) = %d, Cb(0, 112) = %d, Cr(0, 112) = %d", pFrame->data[0][112], pFrame->data[1][112], pFrame->data[2][112]);
       logging("linesize Y %d", pFrame->linesize[0]);
-      logging("linesize U %d", pFrame->linesize[1]);
-      logging("linesize V %d", pFrame->linesize[2]);
+      logging("linesize Cb %d", pFrame->linesize[1]);
+      logging("linesize Cr %d", pFrame->linesize[2]);
       // save a grayscale frame into a .pgm file
       save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
 
