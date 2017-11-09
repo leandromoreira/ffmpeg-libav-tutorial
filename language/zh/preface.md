@@ -22,10 +22,11 @@ Zeitgenössische Illustration (1886)
 
 声音是一种通过空气（或气体、液体或固体）传播的压力波的振动。  
 
-> 在数字音频系统中，麦克风将声音转换成模拟电信号，然后是模拟数字转换器(ADC)——[通常使用脉冲编码调制(PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation)将模拟信号转换成数字信号。
+> 在数字音频系统中，麦克风将声音转换成模拟电信号，然后是模拟数字转换器(ADC) — [通常使用脉冲编码调制(PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) 将模拟信号转换成数字信号。
 
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
-https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
+
+> https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
 
 ##  编解码器-数据收缩
 > 编解码器是一种电子电路或软件，可以**压缩或解压数字音频/视频**。它将原始(未压缩的)数字音频/视频转换成压缩格式，反之亦然。
@@ -43,20 +44,20 @@ fps = 24 //frames_per_second
 
 required_storage = tis * fps * toppf * cpp
 ```
-这个视频需要我们存储大约 `250.28GB` 或 `1.11Gbps` 的带宽，这就是为什么我们需要使用一个编解码器
+这个视频需要我们存储大约 `250.28GB` 或 `1.11Gbps` 的带宽，这就是为什么我们需要使用一个编解码器。
 
 ##  集装箱 - 一个音频和视频的舒适的地方
 > 容器或包装器格式是元文件格式，其规范描述了数据和元数据的不同元素如何共存于计算机文件中。
 > https://en.wikipedia.org/wiki/Digital_container_format
 
-一个**包含所有流的文件**（主要是音频和视频），它还提供同步和通用元数据，例如标题，分辨率等。通常，我们可以通过查看其扩展名来推断文件的格式，例如 ` video.webm` 可能是一个使用容器的视频 [webm](https://www.webmproject.org/)。
+一个**包含所有流的文件**（主要是音频和视频），它还提供同步和通用元数据，例如标题、分辨率等。通常，我们可以通过查看其扩展名来推断文件的格式，例如 ` video.webm` 可能是一个使用容器的视频 [webm](https://www.webmproject.org/)。
 
 ![container](/img/container.png)
 
 ##  FFmpeg - 命令行
 > 一个完整的，跨平台的解决方案来记录，转换和流式音频和视频。
 
-要使用多媒体，我们可以使用名为 [FFmpeg](https://www.ffmpeg.org/) 的 `AMAZING` 工具/库，您可能直接或间接知道/使用它。（你使用 [Chrome?](https://www.chromium.org/developers/design-documents/video)）。
+要使用多媒体，我们可以使用名为 [FFmpeg](https://www.ffmpeg.org/) 的 `AMAZING` 工具/库，您可能直接或间接知道/使用它（你使用 [Chrome?](https://www.chromium.org/developers/design-documents/video)）。
 
 它有一个名为 `ffmpeg` 的命令行程序，它是一个非常简单但功能强大的二进制文件。 例如，只需输入follow命令，就可以从 `mp4` 转换到容器 `avi`。
 
@@ -100,9 +101,11 @@ bunny_1080p_60fps_vp9.webm # output url
 
 ![transcoding](/img/transcoding.png)
 
-**什么？** 将一个流（音频或视频）从一个编解码器转换为另一个编解码器的行为。
-**为什么？** 有时候一些设备（电视机，智能手机，控制台等）不支持X，但Y和更新的编解码器提供更好的压缩率。
-**怎么样？** 将 `H264` （AVC） 视频转换成 `H265` （HEVC）。
+**什么？** 将一个流（音频或视频）从一个编解码器转换为另一个编解码器的行为。  
+
+**为什么？** 有时候一些设备（电视机，智能手机，控制台等）不支持X，但Y和更新的编解码器提供更好的压缩率。  
+
+**怎么样？** 将 `H264` （AVC） 视频转换成 `H265` （HEVC）。  
 
 ```bash
 $ ffmpeg \
@@ -114,9 +117,11 @@ bunny_1080p_60fps_h265.mp4
 
 ![transmuxing](/img/transmuxing.png)
 
-**什么？** 从一种格式（容器）转换到另一种格式的行为。
-**为什么？** 有时候一些设备（电视机，智能手机，控制台等）不支持X，但是有时新的容器提供了现代化的必需功能。
-**怎么样？**将 `mp4` 转换成 `webm` 。
+**什么？** 从一种格式（容器）转换到另一种格式的行为。  
+
+**为什么？** 有时候一些设备（电视机，智能手机，控制台等）不支持X，但是有时新的容器提供了现代化的必需功能。  
+
+**怎么样？** 将 `mp4` 转换成 `webm` 。
 
 ```bash
 $ ffmpeg \
@@ -129,9 +134,11 @@ bunny_1080p_60fps.webm
 
 ![transrating](/img/transrating.png)
 
-**什么？**  变比特率的行为，或者产生其他引用。
-**为什么？** 人们会尝试使用功能不太强大的智能手机或使用光纤互联网连接在 `4K` 电视上以`2G`（边缘）连接观看视频。因此，您应该提供不同比特率的相同视频的再现。
-**怎么样？** 产生 `3856K` 到 `2000K` 之间的比特率的再现 。
+**什么？**  变比特率的行为，或者产生其他引用。  
+
+**为什么？** 人们会尝试使用功能不太强大的智能手机或使用光纤互联网连接在 `4K` 电视上以`2G`（边缘）连接观看视频。因此，您应该提供不同比特率的相同视频的再现。  
+
+**怎么样？** 产生 `3856K` 到 `2000K` 之间的比特率的再现 。  
 
 ```bash
 $ ffmpeg \
@@ -146,8 +153,10 @@ bunny_1080p_60fps_transrating_964_3856.mp4
 
 ![transsizing](/img/transsizing.png)
 
-**什么？** 从一个决议转换到另一个决议的行为，正如转换之前所说的那样，通常用于翻译。
-**为什么？** 原因与翻译相同。
+**什么？** 从一个决议转换到另一个决议的行为，正如转换之前所说的那样，通常用于翻译。  
+
+**为什么？** 原因与翻译相同。  
+
 **怎么样？** 将`1080p` 转换为 `480p` 分辨率。
 
 ```bash
@@ -161,8 +170,10 @@ bunny_1080p_60fps_transsizing_480.mp4
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
-**什么？** 产生许多分辨率（比特率）的行为，并将媒体分成块并通过http服务。
-**为什么？** 为了提供可在低端智能手机或4K电视机上观看的灵活媒体，还可以轻松扩展和部署，但会增加延迟。
+**什么？** 产生许多分辨率（比特率）的行为，并将媒体分成块并通过http服务。  
+
+**为什么？** 为了提供可在低端智能手机或4K电视机上观看的灵活媒体，还可以轻松扩展和部署，但会增加延迟。  
+
 **怎么样？** 使用 `DASH` 创建自适应 `WebM`。
 
 ```bash
@@ -193,7 +204,7 @@ $ ffmpeg \
  -adaptation_sets "id=0,streams=0,1,2,3,4 id=1,streams=5" \
  manifest.mpd
 ```
-PS：我从指令中偷取了这个例子，[使用DASH播放Adaptive WebM](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)
+PS：我从指令中偷取了这个例子，[使用DASH播放Adaptive WebM](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)。  
 
 ## 超越
 
