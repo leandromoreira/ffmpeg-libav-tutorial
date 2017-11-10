@@ -219,11 +219,9 @@ There are [many and many other usages for FFmpeg](https://github.com/leandromore
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
 
-Since [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do tons of tasks over media files, how can we use (embedded) it in our programs?
+Since the [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do essential tasks over the media files, how can we use it in our programs?
 
-It turns out that FFmpeg itself is [composed of several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be used to be integrated into our own programs.
-
-Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to the set of these libraries as **FFmpeg libav**.
+FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs. Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to the set of these libraries as **FFmpeg libav**.
 
 > This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C the Hard Way.
 
@@ -233,7 +231,7 @@ This hello world actually won't show the message `"hello world"` in the terminal
 
 ### FFmpeg libav architecture
 
-But before we start to code, let's learn how **FFmpeg libav architecture** works, how its components communicate with others. For instance, here's a diagram of a process of decoding a video.
+But before we start to code, let's learn how **FFmpeg libav architecture** works, how its components communicate with others. For instance, here's a diagram of the process of decoding a video.
 
 ![ffmpeg libav architecture - decoding process](/img/decoding.png)
 
@@ -251,12 +249,12 @@ The `AVCodec` will decoded them into [`AVFrame`](https://ffmpeg.org/doxygen/trun
 
 ### Chapter 0 - code walkthrough
 
-Before we start to code let's download the [big buck bunny](https://en.wikipedia.org/wiki/Big_Buck_Bunny) annimation that will be used as our source video.
-
-```bash
-$ make download
-$ make cut_smaller_version
-```
+> #### TLDR; show me the [code](/0_hello_world.c) and execution.
+> ```bash
+> $ make download
+> $ make cut_smaller_version
+> $ make hello_world
+> ```
 
 We'll skip some details but don't worry the [source code is available at github](/0_hello_world.c). The first thing we need to do is to register all the codecs, formats and protocols, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3).
 
@@ -281,7 +279,7 @@ We can print the format name and the media duration.
 printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
 ```
 
-To access the `streams` we need to read data from the media, the function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that, now the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream.
+To access the `streams` we need to read data from the media, the function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that, now the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream, an [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 ```c
 avformat_find_stream_info(pFormatContext,  NULL);
@@ -392,3 +390,7 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
     fclose(f);
 }
 ```
+
+And voila, now we have a gray scale image with 2MB.
+
+![saved frame](/img/generated_frame.png)
