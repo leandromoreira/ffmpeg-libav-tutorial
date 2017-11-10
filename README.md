@@ -322,10 +322,73 @@ printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id
 
 With the codec we can allocate memory for the [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html) which will hold the context for our decode/encode process but then we need to fill this codec context with CODEC parameters, we do that with [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16).
 
-Once we fill the codec context we need to open the codec, make it usable, we call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) to do the job.
+Once we filled the codec context we need to open the codec. We call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and then we can use it.
 
 ```c
 AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
 avcodec_parameters_to_context(pCodecContext, pCodecParameters);
 avcodec_open2(pCodecContext, pCodec, NULL);
+```
+
+Now we're going to read the packets from the stream and decode them into frames but first we need to allocate memory for both components, the [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html) and [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html).
+
+```c
+AVPacket *pPacket = av_packet_alloc();
+AVFrame *pFrame = av_frame_alloc();
+```
+
+Let's feed our packets from the streams with the function [`av_read_frame`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61) while it has packets.
+
+```c
+while (av_read_frame(pFormatContext, pPacket) >= 0) {
+  //...
+}
+```
+
+Let's **send the raw data packet** (compressed frame) to the decoder, through the codec context, using the function [`avcodec_send_packet`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3).
+
+```c
+avcodec_send_packet(pCodecContext, pPacket);
+```
+
+And let's **receive the raw data frame** (uncompressed frame) from the decoder, through the same codec context, using the function [`avcodec_receive_frame`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c).
+
+```c
+avcodec_receive_frame(pCodecContext, pFrame);
+```
+
+We can print the frame number, the [PTS](https://en.wikipedia.org/wiki/Presentation_timestamp), DTS, [frame type](https://en.wikipedia.org/wiki/Video_compression_picture_types) and etc.
+
+```c
+printf(
+    "Frame %c (%d) pts %d dts %d key_frame %d [coded_picture_number %d, display_picture_number %d]",
+    av_get_picture_type_char(pFrame->pict_type),
+    pCodecContext->frame_number,
+    pFrame->pts,
+    pFrame->pkt_dts,
+    pFrame->key_frame,
+    pFrame->coded_picture_number,
+    pFrame->display_picture_number
+);
+```
+
+Finally we can save our decoded frame into a [simple gray image](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example). The process is very simple, we'll use the `pFrame->data` where the index is related to the [planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr), we just picked `0` (Y) to save our gray image.
+
+```c
+save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
+
+static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, char *filename)
+{
+    FILE *f;
+    int i;
+    f = fopen(filename,"w");
+    // writing the minimal required header for a pgm file format
+    // portable graymap format -> https://en.wikipedia.org/wiki/Netpbm_format#PGM_example
+    fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
+
+    // writing line by line
+    for (i = 0; i < ysize; i++)
+        fwrite(buf + i * wrap, 1, xsize, f);
+    fclose(f);
+}
 ```
