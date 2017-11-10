@@ -5,7 +5,7 @@
 
 在这里的大部分代码将在c**但不用担心**您可以轻松理解并将其应用于您的首选语言。FFmpeg libav 对许多语言具有很多绑定，如：[python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，甚至你的语言没有它，你仍然可以通过`ffi`来支持它，下面是一个例子[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)。
 
-我们将从一个关于什么是视频，音频，编解码器和容器的快速课程开始，然后我们将进入关于如何使用`ffmpeg`命令行的速成课程，最后我们将编写代码，随意直接跳过[学习FFmpeg libav的艰辛之路](https://github.com/leandromoreira/ffmpeg-libav-tutorial#learn-ffmpeg-libav-the-hard-way)
+我们将从一个关于什么是视频，音频，编解码器和容器的快速课程开始，然后我们将进入关于如何使用`ffmpeg`命令行的速成课程，最后我们将编写代码，随意直接跳过 [学习FFmpeg libav的艰辛之路](https://github.com/leandromoreira/ffmpeg-libav-tutorial#learn-ffmpeg-libav-the-hard-way)。
 
 有人曾经说过，互联网视频流是传统电视的未来，无论如何FFmpeg是值得研究的东西。
 
@@ -18,6 +18,7 @@
 Zeitgenössische Illustration (1886)
 
 ##  音频 - 你听到什么！
+
 虽然一个无声的视频可以表达相当多的感觉，但添加声音会给体验带来更多的乐趣。
 
 声音是一种通过空气（或气体、液体或固体）传播的压力波的振动。  
@@ -37,12 +38,12 @@ Zeitgenössische Illustration (1886)
 假设我们正在创造一个视频的分辨率1080 x 1920 x宽度（高度），我们将花3个字节每像素（最小点屏幕）编码的颜色（或[24位颜色](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29),给我们16777215不同的颜色），这段视频 `每秒24帧` ，时长 `30分钟` 。
 
 ```bash
-toppf = 1080 * 1920 //total_of_pixels_per_frame
-cpp = 3 //cost_per_pixel
-tis = 30 * 60 //time_in_seconds
-fps = 24 //frames_per_second
+toppf = 1080 * 1920 // 每帧的像素总数
+cpp = 3 // 每像素成本
+tis = 30 * 60 // 时间以秒为单位
+fps = 24 // 每秒帧数
 
-required_storage = tis * fps * toppf * cpp
+所需的存储 = tis * fps * toppf * cpp
 ```
 这个视频需要我们存储大约 `250.28GB` 或 `1.11Gbps` 的带宽，这就是为什么我们需要使用一个编解码器。
 
@@ -87,7 +88,7 @@ $ ffmpeg \
 -c:v libvpx-vp9 -c:a libvorbis \ # output options
 bunny_1080p_60fps_vp9.webm # output url
 ```
-这个命令包含一个包含两个流的输入文件 `mp4` ，一个音频编码的 `aac` 编解码器和一个使 `用h264` 编解码器编码的视频，并将其转换为 `webm` 改变它的音频和视频编解码器。
+这个命令包含一个包含两个流的输入文件 `mp4` ，一个音频编码的 `aac`  编解码器和一个使用 `h264`  编解码器编码的视频，并将其转换为 `webm`  改变它的音频和视频编解码器。
 
 我们可以简化上面的命令，但是请注意 `FFmpeg` 将采用或猜测您的默认值，例如当你只是键入 `ffmpeg -i input.avi output.mp4` 它使用什么音频/视频编解码器来产生 `output.mp4` ？
 
