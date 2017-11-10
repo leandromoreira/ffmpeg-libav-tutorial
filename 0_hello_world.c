@@ -258,4 +258,3 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
         fwrite(buf + i * wrap, 1, xsize, f);
     fclose(f);
 }
-
