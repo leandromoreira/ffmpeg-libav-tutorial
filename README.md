@@ -1,12 +1,13 @@
+
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
 # Intro
 
 I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial but it was deprecated and I decided to write this one.
 
-Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like: [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
+Most of the code in here will be in c **but don't worry** you can easily understand and apply it to your preferred language. FFmpeg libav has lots of bindings for many languages like [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi`, here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua).
 
-We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `ffmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
+We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `FFmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
 
 Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that worths to be studied.
 
@@ -34,7 +35,7 @@ https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
 > CODEC is an electronic circuit or software that **compresses or decompresses digital audio/video.** It converts raw (uncompressed) digital audio/video to a compressed format or vice versa.
 > https://en.wikipedia.org/wiki/Video_codec
 
-But if we chose to pack millions of images in a single file and called it a movie, we might ending up with huge file. Let's do the math:
+But if we chose to pack millions of images in a single file and called it a movie, we might end up with a huge file. Let's do the math:
 
 Suppose we are creating a video with a resolution of `1080 x 1920` (height x width) and that we'll spend `3 bytes` per pixel (the minimal point at a screen) to encode the color (or [24 bit color](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), what gives us 16,777,215 different colors) and this video runs at `24 frames per second` and it is `30 minutes` long.
 
@@ -47,14 +48,14 @@ fps = 24 //frames_per_second
 required_storage = tis * fps * toppf * cpp
 ```
 
-This video would requires us a storage of approximately `250.28GB` or a bandwidth of `1.11Gbps` that's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+This video would require us a storage of approximately `250.28GB` or a bandwidth of `1.11Gbps` that's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
 ## container - a comfy place for audio and video
 
 > A container or wrapper format is a metafile format whose specification describes how different elements of data and metadata coexist in a computer file.
 > https://en.wikipedia.org/wiki/Digital_container_format
 
-A **single file that contains all the streams** (mostly the audio and video) and it also provides **synchronization and general metadata**, such as title, resolution and etc. Usually we can infer the format of a file by looking at its extension, for instance a `video.webm` is probably a video using the container [`webm`](https://www.webmproject.org/).
+A **single file that contains all the streams** (mostly the audio and video) and it also provides **synchronization and general metadata**, such as title, resolution and etc. Usually we can infer the format of a file by looking at its extension, for instance, a `video.webm` is probably a video using the container [`webm`](https://www.webmproject.org/).
 
 ![container](/img/container.png)
 
@@ -221,13 +222,13 @@ There are [many and many other usages for FFmpeg](https://github.com/leandromore
 
 Since the [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do essential tasks over the media files, how can we use it in our programs?
 
-FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs. Usually when you install FFmpeg, it installs automatically all these libraries, I'll be referring to the set of these libraries as **FFmpeg libav**.
+FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs. Usually, when you install FFmpeg, it installs automatically all these libraries. I'll be referring to the set of these libraries as **FFmpeg libav**.
 
 > This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C the Hard Way.
 
 ## Chapter 0 - The infamous hello world
-
-This hello world actually won't show the message `"hello world"` in the terminal :tongue: instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and in the end we'll **decode some frames and save them as image files**.
+ 
+This hello world actually won't show the message `"hello world"` in the terminal :tongue: instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and, in the end, we'll **decode some frames and save them as image files**.
 
 ### FFmpeg libav architecture
 
@@ -237,15 +238,15 @@ But before we start to code, let's learn how **FFmpeg libav architecture** works
 
 You'll first need to load your media file into a component called [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (the video container is also known as format), it actually doesn't fully load the whole file, it often only reads the header.
 
-Once we loaded the minimal **header of our container** we can access its streams, think of them as a rudimentary audio and video data. Each stream will be available in a component called [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
+Once we loaded the minimal **header of our container**, we can access its streams; think of them as a rudimentary audio and video data. Each stream will be available in a component called [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 > Stream is a fancy name for a continuous flow of data.
 
 Suppose our video has two streams: an audio encoded with [AAC CODEC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) and a video encoded with [H264 (AVC) CODEC](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). From each stream we can extract **pieces (slices) of data** called packets that will be loaded into components named [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
 
-The **data inside the packets is still coded** (compressed) and in order to decode the packets we need to pass them to a specific [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html).
+The **data inside the packets are still coded** (compressed) and in order to decode the packets, we need to pass them to a specific [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html).
 
-The `AVCodec` will decoded them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) and finally this component gives us **the uncompressed frame**.  Noticed that the same terminology / process is used either by audio and video stream.
+The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) and finally, this component gives us **the uncompressed frame**.  Noticed that the same terminology/process is used either by audio and video stream.
 
 ### Chapter 0 - code walkthrough
 
@@ -256,7 +257,7 @@ The `AVCodec` will decoded them into [`AVFrame`](https://ffmpeg.org/doxygen/trun
 > $ make hello_world
 > ```
 
-We'll skip some details but don't worry the [source code is available at github](/0_hello_world.c). The first thing we need to do is to register all the codecs, formats and protocols, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3).
+We'll skip some details, but don't worry; the [source code is available at github](/0_hello_world.c). The first thing we need to do is to register all the codecs, formats and protocols, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3).
 
 ```c
 av_register_all();
@@ -279,7 +280,7 @@ We can print the format name and the media duration.
 printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
 ```
 
-To access the `streams` we need to read data from the media, the function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that, now the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream, an [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
+To access the `streams`, we need to read data from the media. The function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that. Now, the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream, an [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 ```c
 avformat_find_stream_info(pFormatContext,  NULL);
@@ -294,7 +295,7 @@ for (int i = 0; i < pFormatContext->nb_streams; i++)
 }
 ```
 
-For each stream, we're going to keep the [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html) which describes the properties of a codec used by the stream `i`.
+For each stream, we're going to keep the [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html), which describes the properties of a codec used by the stream `i`.
 
 ```c
 AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
@@ -318,9 +319,9 @@ if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
 printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pCodecParameters->bit_rate);
 ```
 
-With the codec we can allocate memory for the [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html) which will hold the context for our decode/encode process but then we need to fill this codec context with CODEC parameters, we do that with [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16).
+With the codec, we can allocate memory for the [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html), which will hold the context for our decode/encode process, but then we need to fill this codec context with CODEC parameters; we do that with [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16).
 
-Once we filled the codec context we need to open the codec. We call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and then we can use it.
+Once we filled the codec context, we need to open the codec. We call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and then we can use it.
 
 ```c
 AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
@@ -328,7 +329,7 @@ avcodec_parameters_to_context(pCodecContext, pCodecParameters);
 avcodec_open2(pCodecContext, pCodec, NULL);
 ```
 
-Now we're going to read the packets from the stream and decode them into frames but first we need to allocate memory for both components, the [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html) and [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html).
+Now we're going to read the packets from the stream and decode them into frames but first, we need to allocate memory for both components, the [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html) and [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html).
 
 ```c
 AVPacket *pPacket = av_packet_alloc();
