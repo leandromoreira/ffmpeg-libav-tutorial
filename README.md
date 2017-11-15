@@ -456,9 +456,11 @@ In the last example, we saved some frames that can be seen here:
 
 When we're designing a video player we need to **play each frame at a given pace**, otherwise it would be hard to pleasantly see the video either because it's playing so fast or so slow.
 
-Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is know as **timescale**) divisible for the **fps**, it's easier to understand when we look at some examples.
+Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is know as **timescale**) divisible by the **frame rate (fps)**.
 
-Let's simulate some scenarios. For a `fps=60/1` and `timebase=1/60000` each PTS will increase `timescale / fps = 1000` therefore the **PTS real time** for each frame is:
+It's easier to understand when we look at some examples, let's simulate some scenarios.
+
+For a `fps=60/1` and `timebase=1/60000` each PTS will increase `timescale / fps = 1000` therefore the **PTS real time** for each frame could be (supposing it started at 0):
 
 * `frame=0, PTS = 0, PTS_TIME = 0`
 * `frame=1, PTS = 1000, PTS_TIME = PTS * timebase = 0.016`
@@ -471,7 +473,7 @@ For almost the same scenario but with a timebase equal to `1/60`.
 * `frame=2, PTS = 2, PTS_TIME = PTS * timebase = 0.033`
 * `frame=3, PTS = 3, PTS_TIME = PTS * timebase = 0.050`
 
-For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3` therefore the PTS real time for each frame is:
+For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3` and the PTS time could be:
 
 * `frame=0, PTS = 0, PTS_TIME = 0`
 * `frame=1, PTS = 3, PTS_TIME = PTS * timebase = 0.04`
@@ -482,9 +484,7 @@ For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3
 * ...
 * `frame=4064, PTS = 12192, PTS_TIME = PTS * timebase = 162.56`
 
-Now with the `pts_time` we can find a way to render this synched with audio `pts_time` or with a system clock.
-
-The FFmpeg libav API provides these info:
+Now with the `pts_time` we can find a way to render this synched with audio `pts_time` or with a system clock. The FFmpeg libav provides these info through its API:
 
 - fps = [`AVStream->avg_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)
 - tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
