@@ -438,3 +438,69 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 And voilà! Now we have a gray scale image with 2MB:
 
 ![saved frame](/img/generated_frame.png)
+
+## Chapter 1 - syncing audio and video
+
+> **Be the player** - a young JS developer writing a new MSE video player.
+
+Before we move to [code a transcoding example](/#chapter-2---transcoding) let's talk about **timing**, or how a video player knows the right time to play a frame.
+
+In the last example, we saved some frames that can be seen here:
+
+![frame 0](/img/hello_world_frames/frame0.png)
+![frame 1](/img/hello_world_frames/frame1.png)
+![frame 2](/img/hello_world_frames/frame2.png)
+![frame 3](/img/hello_world_frames/frame3.png)
+![frame 4](/img/hello_world_frames/frame4.png)
+![frame 5](/img/hello_world_frames/frame5.png)
+
+When we're designing a video player we need to **play each frame at a given pace**, otherwise it would be hard to pleasantly see the video either because it's playing so fast or so slow.
+
+Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is know as **timescale**) divisible for the **fps**, it's easier to understand when we look at some examples.
+
+Let's simulate some scenarios. For a `fps=60/1` and `timebase=1/60000` each PTS will increase `timescale / fps = 1000` therefore the **PTS real time** for each frame is:
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 1000, PTS_TIME = PTS * timebase = 0.016`
+* `frame=2, PTS = 2000, PTS_TIME = PTS * timebase = 0.033`
+
+For almost the same scenario but with a timebase equal to `1/60`.
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 1, PTS_TIME = PTS * timebase = 0.016`
+* `frame=2, PTS = 2, PTS_TIME = PTS * timebase = 0.033`
+* `frame=3, PTS = 3, PTS_TIME = PTS * timebase = 0.050`
+
+For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3` therefore the PTS real time for each frame is:
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 3, PTS_TIME = PTS * timebase = 0.04`
+* `frame=2, PTS = 6, PTS_TIME = PTS * timebase = 0.08`
+* `frame=3, PTS = 9, PTS_TIME = PTS * timebase = 0.12`
+* ...
+* `frame=24, PTS = 72, PTS_TIME = PTS * timebase = 0.96`
+* ...
+* `frame=4064, PTS = 12192, PTS_TIME = PTS * timebase = 162.56`
+
+Now with the `pts_time` we can find a way to render this synched with audio `pts_time` or with a system clock.
+
+The FFmpeg libav API provides these info:
+
+- fps = [`AVStream->avg_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)
+- tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
+- tbn = [`AVStream->time_base`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a9db755451f14e2bf590d4b85d82b32e6)
+
+Just out of curiosity, the frames we saved were sent in a DTS order (frames: 1,6,4,2,3,5) but played at a PTS order (frames: 1,2,3,4,5)
+
+```
+AVStream->r_frame_rate 60/1
+LOG: AVStream->time_base 1/60000
+LOG: Frame I (1) pts 6000 key_frame 1 [coded_picture_number 0]
+LOG: Frame B (2) pts 7000 key_frame 0 [coded_picture_number 3]
+LOG: Frame B (3) pts 8000 key_frame 0 [coded_picture_number 4]
+LOG: Frame B (4) pts 9000 key_frame 0 [coded_picture_number 2]
+LOG: Frame B (5) pts 10000 key_frame 0 [coded_picture_number 5]
+LOG: Frame P (6) pts 11000 key_frame 0 [coded_picture_number 1]
+```
+
+## Chapter 2 - transcoding
