@@ -443,7 +443,7 @@ And voilà! Now we have a gray scale image with 2MB:
 
 > **Be the player** - a young JS developer writing a new MSE video player.
 
-Before we move to [code a transcoding example](/#chapter-2---transcoding) let's talk about **timing**, or how a video player knows the right time to play a frame.
+Before we move to [code a transcoding example](#chapter-2---transcoding) let's talk about **timing**, or how a video player knows the right time to play a frame.
 
 In the last example, we saved some frames that can be seen here:
 
