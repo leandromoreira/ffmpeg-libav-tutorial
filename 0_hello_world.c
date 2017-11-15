@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 // print out the steps and errors
 static void logging(const char *fmt, ...);
@@ -88,6 +89,10 @@ int main(int argc, const char *argv[])
   {
     AVCodecParameters *pLocalCodecParameters =  NULL;
     pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+    logging("AVStream->time_base before open coded %d/%d", pFormatContext->streams[i]->time_base.num, pFormatContext->streams[i]->time_base.den);
+    logging("AVStream->r_frame_rate before open coded %d/%d", pFormatContext->streams[i]->r_frame_rate.num, pFormatContext->streams[i]->r_frame_rate.den);
+    logging("AVStream->start_time %" PRId64, pFormatContext->streams[i]->start_time);
+    logging("AVStream->duration %" PRId64, pFormatContext->streams[i]->duration);
 
     logging("finding the proper decoder (CODEC)");
 
@@ -164,6 +169,9 @@ int main(int argc, const char *argv[])
   {
     // if it's the video stream
     if (pPacket->stream_index == video_stream_index) {
+    logging("AVCodecContext->time_base %d/%d", pCodecContext->time_base.num, pCodecContext->time_base.den);
+    logging("AVPacket->pts %" PRId64, pPacket->pts);
+    logging("AVPacket->dts %" PRId64, pPacket->dts);
       response = decode_packet(pPacket, pCodecContext, pFrame);
       if (response < 0)
         break;
@@ -218,6 +226,9 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
     }
 
     if (response >= 0) {
+      logging("AVFrame->pts %" PRId64, pFrame->pts);
+      logging("AVFrame->pkt_dts %" PRId64, pFrame->pkt_dts);
+
       logging(
           "Frame %c (%d) pts %d dts %d key_frame %d [coded_picture_number %d, display_picture_number %d]",
           av_get_picture_type_char(pFrame->pict_type),
