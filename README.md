@@ -490,17 +490,18 @@ Now with the `pts_time` we can find a way to render this synched with audio `pts
 - tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
 - tbn = [`AVStream->time_base`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a9db755451f14e2bf590d4b85d82b32e6)
 
-Just out of curiosity, the frames we saved were sent in a DTS order (frames: 1,6,4,2,3,5) but played at a PTS order (frames: 1,2,3,4,5)
+Just out of curiosity, the frames we saved were sent in a DTS order (frames: 1,6,4,2,3,5) but played at a PTS order (frames: 1,2,3,4,5). Also, notice how cheap are B-Frames in comparison to P or I-Frames.
 
 ```
 AVStream->r_frame_rate 60/1
 LOG: AVStream->time_base 1/60000
-LOG: Frame I (1) pts 6000 key_frame 1 [coded_picture_number 0]
-LOG: Frame B (2) pts 7000 key_frame 0 [coded_picture_number 3]
-LOG: Frame B (3) pts 8000 key_frame 0 [coded_picture_number 4]
-LOG: Frame B (4) pts 9000 key_frame 0 [coded_picture_number 2]
-LOG: Frame B (5) pts 10000 key_frame 0 [coded_picture_number 5]
-LOG: Frame P (6) pts 11000 key_frame 0 [coded_picture_number 1]
+
+LOG: Frame 1 (type=I, size=153797 bytes) pts 6000 key_frame 1 [DTS 0]
+LOG: Frame 2 (type=B, size=8117 bytes) pts 7000 key_frame 0 [DTS 3]
+LOG: Frame 3 (type=B, size=8226 bytes) pts 8000 key_frame 0 [DTS 4]
+LOG: Frame 4 (type=B, size=17699 bytes) pts 9000 key_frame 0 [DTS 2]
+LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
+LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 ```
 
 ## Chapter 2 - transcoding
