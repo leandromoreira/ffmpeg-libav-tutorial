@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 // print out the steps and errors
 static void logging(const char *fmt, ...);
@@ -88,6 +89,10 @@ int main(int argc, const char *argv[])
   {
     AVCodecParameters *pLocalCodecParameters =  NULL;
     pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+    logging("AVStream->time_base before open coded %d/%d", pFormatContext->streams[i]->time_base.num, pFormatContext->streams[i]->time_base.den);
+    logging("AVStream->r_frame_rate before open coded %d/%d", pFormatContext->streams[i]->r_frame_rate.num, pFormatContext->streams[i]->r_frame_rate.den);
+    logging("AVStream->start_time %" PRId64, pFormatContext->streams[i]->start_time);
+    logging("AVStream->duration %" PRId64, pFormatContext->streams[i]->duration);
 
     logging("finding the proper decoder (CODEC)");
 
@@ -164,6 +169,7 @@ int main(int argc, const char *argv[])
   {
     // if it's the video stream
     if (pPacket->stream_index == video_stream_index) {
+    logging("AVPacket->pts %" PRId64, pPacket->pts);
       response = decode_packet(pPacket, pCodecContext, pFrame);
       if (response < 0)
         break;
@@ -219,22 +225,17 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 
     if (response >= 0) {
       logging(
-          "Frame %c (%d) pts %d dts %d key_frame %d [coded_picture_number %d, display_picture_number %d]",
-          av_get_picture_type_char(pFrame->pict_type),
+          "Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
           pCodecContext->frame_number,
+          av_get_picture_type_char(pFrame->pict_type),
+          pFrame->pkt_size,
           pFrame->pts,
-          pFrame->pkt_dts,
           pFrame->key_frame,
-          pFrame->coded_picture_number,
-          pFrame->display_picture_number
+          pFrame->coded_picture_number
       );
 
       char frame_filename[1024];
       snprintf(frame_filename, sizeof(frame_filename), "%s-%d.pgm", "frame", pCodecContext->frame_number);
-      logging("Y(0, 112) = %d, Cb(0, 112) = %d, Cr(0, 112) = %d", pFrame->data[0][112], pFrame->data[1][112], pFrame->data[2][112]);
-      logging("linesize Y %d", pFrame->linesize[0]);
-      logging("linesize Cb %d", pFrame->linesize[1]);
-      logging("linesize Cr %d", pFrame->linesize[2]);
       // save a grayscale frame into a .pgm file
       save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
 
