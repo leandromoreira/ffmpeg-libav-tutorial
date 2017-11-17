@@ -265,7 +265,198 @@ FFmpeg有很多[FFmpeg的许多其他用法](https://github.com/leandromoreira/d
 
 `AVCodec` 将它们解码成 [AVFrame](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) ，最后这个组件给了我们**未压缩的帧**。 注意，同样的术语/过程被音频和视频流所使用。
 
-###  第0章-代码演练
 
-但让我们来讨论一下代码，我们会跳过一些细节，但不要担心文件对你来说是可用的。
+##  第0章 代码演练
+> TLDR; 让我看看代码和执行。
+> ```bash
+> $ make download
+> $ make cut_smaller_version
+> $ make hello_world
+> ```
 
+但让我们来讨论一下代码，但请不要担心：[源代码已经同步在github](/0_hello_world.c)。
+我们需要做的第一件事是注册所有的编解码器，格式和协议。
+要做到这一点，我们只需要调用该函数 [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3):
+```c
+av_register_all();
+```
+
+现在我们要分配内存给组件[`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html)将保存有关格式（容器）
+```c
+AVFormatContext *pFormatContext = avformat_alloc_context();
+```
+现在我们打开文件并读取它的头文件并填写 `AVFormatContext` 关于格式的最少信息（注意通常编解码器没有打开）。
+用来做这个的功能是 [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49)。它期望一个`AVFormatContext`, 一个 `filename` 和两个可选参数：[`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html)（如果你传递的值`NULL`，FFmpeg会猜测格式）和 [`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html)（这是分流器的选项）。
+
+```c
+avformat_open_input(&pFormatContext, filename, NULL, NULL);
+```
+我们可以打印格式名称和媒体时长：
+
+```c
+printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
+```
+要访问`流`，我们需要从媒体读取数据。通过函数 [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb)可以获取
+
+```c
+avformat_find_stream_info(pFormatContext,  NULL);
+```
+现在我们将遍历所有的流。
+
+```c
+for (int i = 0; i < pFormatContext->nb_streams; i++)
+{
+  //
+}
+```
+对于每一个流，我们要保持 [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html)，其中描述了流“i”使用的编解码器的属性。
+
+```c
+AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+```
+通过编解码器属性，我们可以查找正确的`编解码器`,函数 [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca)并找到注册的解码器的编解码器ID并返回一个[`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html)，知道如何使用CO ** de和** DEC **的组件。
+
+```c
+AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
+```
+现在我们可以打印有关编解码器的信息。
+
+```c
+// specific for video and audio
+if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
+  printf("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
+} else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
+  printf("Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
+}
+// general
+printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pCodecParameters->bit_rate);
+```
+通过编解码器，我们可以为它分配内存 [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html)，这将为我们的解码/编码过程保留上下文，但是随后我们需要使用编解码器参数填充此编解码器上下文；我们这样做[`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16)。
+一旦我们填充了编解码器上下文，我们需要打开编解码器。 我们称之为函数[`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d)，然后我们可以使用它。
+
+```c
+AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
+avcodec_parameters_to_context(pCodecContext, pCodecParameters);
+avcodec_open2(pCodecContext, pCodec, NULL);
+```
+现在我们要从流中读取数据包并将它们解码为帧，但首先我们需要为这两个组件分配内存，[`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html) and [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html)
+
+```c
+AVPacket *pPacket = av_packet_alloc();
+AVFrame *pFrame = av_frame_alloc();
+```
+让我们用这个函数从流中提供我们的数据包[`av_read_frame`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61)当有数据包时。
+
+```c
+while (av_read_frame(pFormatContext, pPacket) >= 0) {
+  //...
+}
+```
+让我们**发送原始数据包**（压缩帧）通过编解码器上下文，使用函数[`avcodec_receive_frame`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c)。
+
+```c
+avcodec_receive_frame(pCodecContext, pFrame);
+```
+我们可以打印帧号，[PTS](https://en.wikipedia.org/wiki/Presentation_timestamp), DTS, [frame type](https://en.wikipedia.org/wiki/Video_compression_picture_types) 和 etc。
+
+```c
+printf(
+    "Frame %c (%d) pts %d dts %d key_frame %d [coded_picture_number %d, display_picture_number %d]",
+    av_get_picture_type_char(pFrame->pict_type),
+    pCodecContext->frame_number,
+    pFrame->pts,
+    pFrame->pkt_dts,
+    pFrame->key_frame,
+    pFrame->coded_picture_number,
+    pFrame->display_picture_number
+);
+```
+最后，我们可以将解码的帧保存到一个[simple gray image](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example)。这个过程非常简单，我们将使用`pFrame->data`那里的指数与之相关[planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr)，我们刚刚采摘`0`（Y）保存我们的灰色图像。
+
+```c
+save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
+
+static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, char *filename)
+{
+    FILE *f;
+    int i;
+    f = fopen(filename,"w");
+    // writing the minimal required header for a pgm file format
+    // portable graymap format -> https://en.wikipedia.org/wiki/Netpbm_format#PGM_example
+    fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
+
+    // writing line by line
+    for (i = 0; i < ysize; i++)
+        fwrite(buf + i * wrap, 1, xsize, f);
+    fclose(f);
+}
+```
+
+瞧！ 现在我们有一个2MB的灰度图像：
+![saved frame](/img/generated_frame.png)
+
+
+## 第1章  同步音频和视频
+> **Be the player** : 一位年轻的JS开发者正在写一个新的MSE视频播放器。
+
+在我们搬到之前[code a transcoding example](#chapter-2---transcoding)，让我们来谈谈**timing（定时）**,或者视频播放器如何知道播放帧的正确时间。
+
+在最后一个例子中，我们保存了一些可以在这里看到的框架：
+
+![frame 0](/img/hello_world_frames/frame0.png)
+![frame 1](/img/hello_world_frames/frame1.png)
+![frame 2](/img/hello_world_frames/frame2.png)
+![frame 3](/img/hello_world_frames/frame3.png)
+![frame 4](/img/hello_world_frames/frame4.png)
+![frame 5](/img/hello_world_frames/frame5.png)
+
+当我们设计一个视频播放器时，我们需要**以给定的速度播放每一帧**，否则很难愉快地看视频，因为它播放的速度太快或太慢。
+
+因此我们需要引入一些逻辑来平滑地播放每一帧。对于这个问题，每个框架都有一个**演示文稿时间戳** (PTS)这是一个越来越多的因素，**时基**这是一个有理数（分母是知道的**时间**）
+**可以被帧速率（fps）**整除。
+当我们看一些例子时，我们更容易理解，让我们模拟一些场景。
+对于 `fps=60/1` 和 `timebase=1/60000`每个PTS将增加`timescale / fps = 1000`，因此每个帧的** PTS实时**可以是（假设它从0开始）：
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 1000, PTS_TIME = PTS * timebase = 0.016`
+* `frame=2, PTS = 2000, PTS_TIME = PTS * timebase = 0.033`
+
+对于几乎相同的情况，但时间等于`1/60`。
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 1, PTS_TIME = PTS * timebase = 0.016`
+* `frame=2, PTS = 2, PTS_TIME = PTS * timebase = 0.033`
+* `frame=3, PTS = 3, PTS_TIME = PTS * timebase = 0.050`
+
+对于 `fps=25/1` 和 `timebase=1/75` 每个PTS将增加 `timescale / fps = 3` 并且 临时的时间可能是:
+
+* `frame=0, PTS = 0, PTS_TIME = 0`
+* `frame=1, PTS = 3, PTS_TIME = PTS * timebase = 0.04`
+* `frame=2, PTS = 6, PTS_TIME = PTS * timebase = 0.08`
+* `frame=3, PTS = 9, PTS_TIME = PTS * timebase = 0.12`
+* ...
+* `frame=24, PTS = 72, PTS_TIME = PTS * timebase = 0.96`
+* ...
+* `frame=4064, PTS = 12192, PTS_TIME = PTS * timebase = 162.56`
+  现在与`pts_time`，我们可以找到一种方法来渲染与音频`pts_time`或系统时钟同步。 `FFmpeg libav`通过`API`提供这些信息：
+
+- fps = [`AVStream->avg_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)
+- tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
+- tbn = [`AVStream->time_base`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a9db755451f14e2bf590d4b85d82b32e6)
+
+出于好奇，我们保存的帧以DTS的顺序发送（帧：1,6,4,2,3,5），但是以PTS命令（帧：1,2,3,4,5）播放。 另外，请注意与P帧或I帧相比，B帧的便宜程度。
+
+```
+LOG: AVStream->r_frame_rate 60/1
+LOG: AVStream->time_base 1/60000
+...
+LOG: Frame 1 (type=I, size=153797 bytes) pts 6000 key_frame 1 [DTS 0]
+LOG: Frame 2 (type=B, size=8117 bytes) pts 7000 key_frame 0 [DTS 3]
+LOG: Frame 3 (type=B, size=8226 bytes) pts 8000 key_frame 0 [DTS 4]
+LOG: Frame 4 (type=B, size=17699 bytes) pts 9000 key_frame 0 [DTS 2]
+LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
+LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
+```
+
+
+##  第2章  转码
