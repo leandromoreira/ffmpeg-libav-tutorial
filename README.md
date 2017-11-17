@@ -493,9 +493,9 @@ Now with the `pts_time` we can find a way to render this synched with audio `pts
 Just out of curiosity, the frames we saved were sent in a DTS order (frames: 1,6,4,2,3,5) but played at a PTS order (frames: 1,2,3,4,5). Also, notice how cheap are B-Frames in comparison to P or I-Frames.
 
 ```
-AVStream->r_frame_rate 60/1
+LOG: AVStream->r_frame_rate 60/1
 LOG: AVStream->time_base 1/60000
-
+...
 LOG: Frame 1 (type=I, size=153797 bytes) pts 6000 key_frame 1 [DTS 0]
 LOG: Frame 2 (type=B, size=8117 bytes) pts 7000 key_frame 0 [DTS 3]
 LOG: Frame 3 (type=B, size=8226 bytes) pts 8000 key_frame 0 [DTS 4]
