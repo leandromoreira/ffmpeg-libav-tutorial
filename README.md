@@ -441,7 +441,7 @@ And voilà! Now we have a gray scale image with 2MB:
 
 ## Chapter 1 - syncing audio and video
 
-> **Be the player** - a young JS developer writing a new MSE video player.
+> **The time is gone, the song is over** - Time.
 
 Before we move to [code a transcoding example](#chapter-2---transcoding) let's talk about **timing**, or how a video player knows the right time to play a frame.
 
