@@ -13,8 +13,8 @@
 __目录__
 
 * [介绍](#介绍)
-  * [视频 - 你看到了什么！](#视频 - 你看到了什么！)
-  * [音频 - 你听到什么！](#audio---what-you-listen)
+  * [视频 - 你看到了什么！](#视频---你看到了什么！)
+  * [音频 - 你听到什么！](#音频---你听到什么！)
   * [编解码器-数据收缩](#codec---shrinking-data)
   * [集装箱 - 一个音频和视频的舒适的地方](#container---a-comfy-place-for-audio-and-video)
 * [FFmpeg - 命令行](#ffmpeg---command-line)
