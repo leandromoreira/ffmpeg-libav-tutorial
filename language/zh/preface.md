@@ -13,8 +13,8 @@
 __目录__
 
 * [介绍](#介绍)
-  * [视频 - 你看到了什么！](#视频---你看到了什么！)
-  * [音频 - 你听到什么！](#音频---你听到什么！)
+  * [视频 - 你看到了什么！](#video---what-you-see)
+  * [音频 - 你听到什么！](#audio---what-you-listen)
   * [编解码器-数据收缩](#codec---shrinking-data)
   * [集装箱 - 一个音频和视频的舒适的地方](#container---a-comfy-place-for-audio-and-video)
 * [FFmpeg - 命令行](#ffmpeg---command-line)
@@ -32,7 +32,7 @@ __目录__
     * [第0章 - 代码演练](#chapter-0---code-walkthrough)
 
 #  介绍
-##  视频 - 你看到了什么！
+##  <a name="video---what-you-see"/> 视频 - 你看到了什么！
 
 如果你有一系列的图像序列，并以给定的频率改变它们，那么假设[每秒钟有24个图像](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)，那么就会产生一个[运动错觉](https://en.wikipedia.org/wiki/Persistence_of_vision)，总之这是视频背后的一个非常基本的想法，一系列运行的图像/帧以给定的速度。
 
@@ -40,7 +40,7 @@ __目录__
 
 Zeitgenössische Illustration (1886)
 
-##  音频 - 你听到什么！
+##  <a name="audio---what-you-listen"/> 音频 - 你听到什么！
 
 虽然一个无声的视频可以表达相当多的感觉，但添加声音会给体验带来更多的乐趣。
 
@@ -52,7 +52,7 @@ Zeitgenössische Illustration (1886)
 
 > https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
 
-##  编解码器-数据收缩
+##  <a name="codec---shrinking-data"/> 编解码器-数据收缩
 > 编解码器是一种电子电路或软件，可以**压缩或解压数字音频/视频**。它将原始(未压缩的)数字音频/视频转换成压缩格式，反之亦然。
 > https://en.wikipedia.org/wiki/Video_codec
 
@@ -70,7 +70,7 @@ fps = 24 // 每秒帧数
 ```
 这个视频需要我们存储大约 `250.28GB` 或 `1.11Gbps` 的带宽，这就是为什么我们需要使用一个编解码器。
 
-##  集装箱 - 一个音频和视频的舒适的地方
+##  <a name="container---a-comfy-place-for-audio-and-video"/> 集装箱 - 一个音频和视频的舒适的地方
 > 容器或包装器格式是元文件格式，其规范描述了数据和元数据的不同元素如何共存于计算机文件中。
 > https://en.wikipedia.org/wiki/Digital_container_format
 
@@ -78,7 +78,7 @@ fps = 24 // 每秒帧数
 
 ![container](/img/container.png)
 
-##  FFmpeg - 命令行
+##  <a name="ffmpeg---command-line"/> FFmpeg - 命令行
 > 一个完整的，跨平台的解决方案来记录，转换和流式音频和视频。
 
 要使用多媒体，我们可以使用名为 [FFmpeg](https://www.ffmpeg.org/) 的 `AMAZING` 工具/库，您可能直接或间接知道/使用它（你使用 [Chrome?](https://www.chromium.org/developers/design-documents/video)）。
@@ -90,7 +90,7 @@ $ ffmpeg -i input.mp4 output.avi
 ```
 我们只是做了一个从一个容器转换到另一个容器的技术上，在这里 `FFmpeg` 也可以做一个转码，但我们稍后再谈。
 
-##  FFmpeg命令行工具 101
+##  <a name="ffmpeg-command-line-tool-101"/> FFmpeg命令行工具 101
 `FFmpeg` 确实有一个[文档](https://www.ffmpeg.org/ffmpeg.html)，说明它是如何工作的。 为了简短起见，`FFmpeg` 命令行程序需要以下参数格式来执行其操作 `ffmpeg {1} {2} -i {3} {4} {5}`，其中：
 
 1. 全局选项
@@ -117,11 +117,11 @@ bunny_1080p_60fps_vp9.webm # output url
 
 `Werner Robitza` 写了一个必须读/执行 [关于使用FFmpeg进行编码和编辑的教程](http://slhck.info/ffmpeg-encoding-course/#/)。
 
-#  常见的视频操作
+#  <a name="common-video-operations"/> 常见的视频操作
 
 在处理音频/视频时，我们通常使用媒体执行一系列任务。
 
-## 转码
+## <a name="transcoding"/> 转码
 
 ![transcoding](/img/transcoding.png)
 
