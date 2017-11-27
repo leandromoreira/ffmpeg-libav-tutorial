@@ -8,6 +8,10 @@ hello_world: clean
 	gcc -g -Wall -o build/hello_world -lavformat -lavcodec -lswscale -lz 0_hello_world.c \
 	  && ./build/hello_world small_bunny_1080p_60fps.mp4
 
+transcoding: clean
+	gcc -g -Wall -o build/transcoding -lavformat -lavcodec -lswscale -lz 2_transcoding.c \
+	  && ./build/transcoding small_bunny_1080p_60fps.mp4 bunny_1s_gop.mp4
+
 clean:
-	rm -f ./build/hello_world
+	rm -f ./build/hello_world ./build/transcoding
 
