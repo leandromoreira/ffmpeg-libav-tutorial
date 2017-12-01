@@ -63,9 +63,11 @@ int main(const int argc, char *argv[])
     return -1;
   }
 
-  if (avio_open(&encoder->format_context->pb, encoder->file_name, AVIO_FLAG_WRITE) < 0) {
-    logging("could not open output file");
-    return -1;
+  if (!(encoder->format_context->oformat->flags & AVFMT_NOFILE)) {
+    if (avio_open(&encoder->format_context->pb, encoder->file_name, AVIO_FLAG_WRITE) < 0) {
+      logging("could not open output file");
+      return -1;
+    }
   }
 
   if (avformat_write_header(encoder->format_context, NULL) < 0) {
@@ -80,46 +82,75 @@ int main(const int argc, char *argv[])
     return -1;
   }
 
-  AVPacket *i_packet = av_packet_alloc();
-  if (!i_packet) {
-    logging("failed to allocated memory for AVPacket");
-    return -1;
-  }
+  AVPacket i_packet = {.data = NULL, .size = 0};
 
   int response = 0;
-  int how_many_packets_to_process = 8;
+  int how_many_packets_to_process = 200;
 
-  while (av_read_frame(decoder->format_context, i_packet) >= 0)
+  while (av_read_frame(decoder->format_context, &i_packet) >= 0)
   {
-    logging("AVPacket->pts %" PRId64, i_packet->pts);
-    response = decode_packet(i_packet, decoder->codec_context[i_packet->stream_index], i_frame);
-    if (response < 0)
-      break;
 
-    i_frame->format = decoder->codec_context[i_packet->stream_index]->pix_fmt;
-    i_frame->width = decoder->codec_context[i_packet->stream_index]->width;
-    i_frame->height = decoder->codec_context[i_packet->stream_index]->height;
+    if (i_packet.stream_index == decoder->video_stream_index) {
+      av_packet_rescale_ts(&i_packet,
+          decoder->format_context->streams[i_packet.stream_index]->time_base,
+          decoder->codec_context[i_packet.stream_index]->time_base
+          );
 
-    encode_frame(
-        encoder->format_context,
-        encoder->codec_context[i_packet->stream_index],
-        i_frame,
-        i_packet->stream_index
-    );
+
+      logging("Stream (%d) AVPacket->pts %" PRId64, i_packet.stream_index, i_packet.pts);
+      response = decode_packet(&i_packet, decoder->codec_context[i_packet.stream_index], i_frame);
+      if (response < 0) {
+        logging("break");
+      av_packet_unref(&i_packet);
+        break;
+      }
+
+      i_frame->format = decoder->codec_context[i_packet.stream_index]->pix_fmt;
+      i_frame->width = decoder->codec_context[i_packet.stream_index]->width;
+      i_frame->height = decoder->codec_context[i_packet.stream_index]->height;
+      i_frame->linesize[0] = decoder->codec_context[i_packet.stream_index]->width;
+      //i_frame->linesize[1] = 960; //decoder->codec_context[i_packet.stream_index]->width;
+      //i_frame->linesize[2] = 960; // decoder->codec_context[i_packet.stream_index]->width;
+      //LOG: linesize[0]=1920
+      //LOG: linesize[1]=960
+      //LOG: linesize[2]=960
+
+      encode_frame(
+          encoder->format_context,
+          encoder->codec_context[i_packet.stream_index],
+          i_frame,
+          i_packet.stream_index
+          );
+    } else {
+      logging("Audio Stream packet->pts %" PRId64, i_packet.pts);
+      logging("\tstart copying packets (size=%d) without reencoding", i_packet.size);
+      // copying without reencoding
+      av_packet_rescale_ts(&i_packet,
+          decoder->stream[i_packet.stream_index]->time_base,
+          encoder->stream[i_packet.stream_index]->time_base
+          );
+
+      if (av_interleaved_write_frame(encoder->format_context, &i_packet) < 0) {
+        logging("error while copying audio stream");
+        return -1;
+      }
+      logging("\tfinish copying packets without reencoding");
+    }
 
     if (--how_many_packets_to_process <= 0) break;
 
     av_frame_unref(i_frame);
-    av_packet_unref(i_packet);
+    av_packet_unref(&i_packet);
   }
 
   /* flush the encoder */
-  //encode(c, NULL, pkt, f);
+  //encode_frame(c, NULL, pkt, f);
   return 0;
 }
 
 static int encode_frame(AVFormatContext *o_format_context, AVCodecContext *encoder_codec_context, AVFrame *frame, int stream_index)
 {
+
   AVPacket *o_packet = av_packet_alloc();
   if (!o_packet) {
     logging("could not allocate memory for output packet");
@@ -129,11 +160,15 @@ static int encode_frame(AVFormatContext *o_format_context, AVCodecContext *encod
   int ret;
   /* send the frame to the encoder */
   if (frame)
-    logging("Send frame %3"PRId64"", frame->pts);
+    logging("Send frame %d", frame->pts);
+  logging("Before send frame avcodeccontext=%p, frame=%p", encoder_codec_context, frame);
   ret = avcodec_send_frame(encoder_codec_context, frame);
+  logging("After send frame");
 
   while (ret >= 0) {
+    logging("Before receive packet");
     ret = avcodec_receive_packet(encoder_codec_context, o_packet);
+    logging("After receive packet");
 
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
       logging("Error while receiving a packet from the decoder: %s", av_err2str(ret));
@@ -179,16 +214,21 @@ static int decode_packet(AVPacket *i_packet, AVCodecContext *decoder_codec_conte
 
   while (response >= 0)
   {
+    logging("receiving i_frame->pkt_size %d", i_frame->pkt_size);
     response = avcodec_receive_frame(decoder_codec_context, i_frame);
     if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+      logging("%s", av_err2str(response));
       break;
     } else if (response < 0) {
       logging("Error while receiving a frame from the decoder: %s", av_err2str(response));
       return response;
     }
+    logging("linesize[0]=%d", i_frame->linesize[0]);
+    logging("linesize[1]=%d", i_frame->linesize[1]);
+    logging("linesize[2]=%d", i_frame->linesize[2]);
   }
-
-  return 0;
+  logging("received i_frame->pkt_size %d", i_frame->pkt_size);
+  return response;
 }
 
 static int prepare_output(TranscodeContext *input_transcode, TranscodeContext *output_transcode)
@@ -217,8 +257,7 @@ static int prepare_output(TranscodeContext *input_transcode, TranscodeContext *o
     }
 
     encoder_context = avcodec_alloc_context3(encoder);
-    if (!encoder_context)
-    {
+    if (!encoder_context) {
       logging("failed to allocated memory for AVCodecContext");
       return -1;
     }
@@ -243,7 +282,6 @@ static int prepare_output(TranscodeContext *input_transcode, TranscodeContext *o
         encoder_context->pix_fmt = decoder_context->pix_fmt;
 
     } else if (decoder_context->codec_type == AVMEDIA_TYPE_AUDIO) {
-      //review if this is necessary while just copying the stream
       encoder_context->sample_rate = decoder_context->sample_rate;
       encoder_context->channel_layout = decoder_context->channel_layout;
       encoder_context->channels = av_get_channel_layout_nb_channels(encoder_context->channel_layout);
@@ -261,6 +299,10 @@ static int prepare_output(TranscodeContext *input_transcode, TranscodeContext *o
       return -1;
     }
 
+    if (output_transcode->format_context->oformat->flags & AVFMT_GLOBALHEADER) {
+      encoder_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
+
     stream->time_base = encoder_context->time_base;
 
     if (encoder_context->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -274,6 +316,7 @@ static int prepare_output(TranscodeContext *input_transcode, TranscodeContext *o
     output_transcode->codec_context[i] = encoder_context;
   }
 
+  av_dump_format(output_transcode->format_context, 0, output_transcode->file_name, 1);
   return 0;
 }
 
@@ -294,13 +337,14 @@ static int prepare_input(TranscodeContext *input_transcode)
     AVStream *stream = input_transcode->format_context->streams[i];
     AVCodecParameters *codec_parameters = input_transcode->format_context->streams[i]->codecpar;
     AVCodec *codec = avcodec_find_decoder(codec_parameters->codec_id);
+    AVCodecContext *codec_context = NULL;
 
     if (!codec) {
       logging("ERROR unsupported codec!");
       return -1;
     }
 
-    AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+    codec_context = avcodec_alloc_context3(codec);
     if (!codec_context) {
       logging("failed to allocated memory for AVCodecContext");
       return -1;
@@ -311,11 +355,6 @@ static int prepare_input(TranscodeContext *input_transcode)
       return -1;
     }
 
-    if (avcodec_open2(codec_context, codec, NULL) < 0) {
-      logging("failed to open codec through avcodec_open2");
-      return -1;
-    }
-
     if (codec_context->codec_type == AVMEDIA_TYPE_VIDEO) {
       codec_context->framerate = av_guess_frame_rate(input_transcode->format_context, stream, NULL);
       input_transcode->video_stream_index = i;
@@ -323,11 +362,15 @@ static int prepare_input(TranscodeContext *input_transcode)
       input_transcode->audio_stream_index = i;
     }
 
+    if (avcodec_open2(codec_context, codec, NULL) < 0) {
+      logging("failed to open codec through avcodec_open2");
+      return -1;
+    }
+
     input_transcode->codec[i] = codec;
     input_transcode->stream[i] = stream;
     input_transcode->codec_context[i] = codec_context;
   }
-
   av_dump_format(input_transcode->format_context, 0, input_transcode->file_name, 0);
   return 0;
 }
