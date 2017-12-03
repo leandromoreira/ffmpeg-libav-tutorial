@@ -20,7 +20,8 @@ typedef struct _TranscodeContext {
 } TranscodeContext;
 
 static void logging(const char *fmt, ...);
-static int decode_packet(AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame);
+static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame, int stream_index);
+static int encode_frame(AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index);
 static int prepare_decoder(TranscodeContext *decoder_context);
 static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *decoder_context);
 
@@ -63,17 +64,13 @@ int main(int argc, char *argv[])
     logging("AVPacket->pts %" PRId64, input_packet->pts);
 
     if (input_packet->stream_index == decoder_context->video_stream_index) {
-      response = decode_packet(input_packet, decoder_context->codec_context[input_packet->stream_index], input_frame);
+      response = decode_packet(decoder_context->format_context, input_packet, decoder_context->codec_context[input_packet->stream_index], input_frame, input_packet->stream_index);
       if (response < 0)
         break;
       if (--how_many_packets_to_process <= 0) break;
       av_packet_unref(input_packet);
     } else {
       // just copying audio stream
-      // https://ffmpeg.org/doxygen/trunk/remuxing_8c-example.html
-//      logging("\tstart copying packets (size=%d) without reencoding", input_packet->size);
-//      logging("time base %p",decoder_context->stream[input_packet->stream_index]->time_base);
-//      logging("time base %p",encoder_context->stream[input_packet->stream_index]);
       av_packet_rescale_ts(input_packet,
           decoder_context->stream[input_packet->stream_index]->time_base,
           encoder_context->stream[input_packet->stream_index]->time_base
@@ -86,6 +83,8 @@ int main(int argc, char *argv[])
       logging("\tfinish copying packets without reencoding");
     }
   }
+  // flush all frames
+  encode_frame(decoder_context->format_context, decoder_context->codec_context[encoder_context->video_stream_index], NULL, encoder_context->video_stream_index);
 
   av_write_trailer(encoder_context->format_context);
 
@@ -171,7 +170,7 @@ static int prepare_decoder(TranscodeContext *decoder_context) {
   return 0;
 }
 
-static int decode_packet(AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame)
+static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame, int stream_index)
 {
   int response = avcodec_send_packet(codec_context, packet);
 
@@ -193,7 +192,7 @@ static int decode_packet(AVPacket *packet, AVCodecContext *codec_context, AVFram
     if (response >= 0) {
       if (codec_context->codec_type == AVMEDIA_TYPE_VIDEO) {
         logging(
-            "\tVIDEO Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
+            "\tEncoding VIDEO Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
             codec_context->frame_number,
             av_get_picture_type_char(frame->pict_type),
             frame->pkt_size,
@@ -201,20 +200,54 @@ static int decode_packet(AVPacket *packet, AVCodecContext *codec_context, AVFram
             frame->key_frame,
             frame->coded_picture_number
             );
-      } else if (codec_context->codec_type == AVMEDIA_TYPE_AUDIO) {
-        logging(
-            "\tAUDIO Frame %d (size=%d bytes) pts %d",
-            codec_context->frame_number,
-            frame->pkt_size,
-            frame->pts
-            );
+        encode_frame(format_context, codec_context, frame, stream_index);
       }
-
       av_frame_unref(frame);
     }
   }
   return 0;
 }
+
+static int encode_frame(AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index)
+{
+  AVPacket *output_packet = av_packet_alloc();
+  if (!output_packet) {
+    logging("could not allocate memory for output packet");
+    return -1;
+  }
+
+  int ret;
+  if (frame)
+    logging("Send frame %3"PRId64"", frame->pts);
+  ret = avcodec_send_frame(codec_context, frame);
+
+  while (ret >= 0) {
+    ret = avcodec_receive_packet(codec_context, output_packet);
+
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+      logging("Error while receiving a packet from the decoder: %s", av_err2str(ret));
+      return -1;
+    } else if (ret < 0) {
+      logging("Error while receiving a packet from the decoder: %s", av_err2str(ret));
+      return -1;
+    }
+
+    /* prepare packet for muxing */
+    output_packet->stream_index = stream_index;
+    //av_packet_rescale_ts(&enc_pkt,
+    //    stream_ctx[stream_index].codec_context->time_base,
+    //    ofmt_ctx->streams[stream_index]->time_base);
+    //av_log(NULL, AV_LOG_DEBUG, "Muxing frame\n");
+    /* mux encoded frame */
+    ret = av_interleaved_write_frame(format_context, output_packet);
+
+    logging("Write packet %3"PRId64" (size=%5d)", output_packet->pts, output_packet->size);
+    av_packet_unref(output_packet);
+  }
+  av_packet_free(&output_packet);
+  return 0;
+}
+
 
 static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeContext *decoder_context) {
   int index = decoder_context->video_stream_index;
