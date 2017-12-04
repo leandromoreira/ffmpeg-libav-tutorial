@@ -304,9 +304,6 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
     return -1;
   }
 
-  if (encoder_context->format_context->oformat->flags & AVFMT_GLOBALHEADER)
-    encoder_context->format_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
   encoder_context->stream[index]->time_base = encoder_context->codec_context[index]->time_base;
   return 0;
 }
@@ -321,7 +318,7 @@ static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContex
   encoder_context->codec_context[index]->channel_layout = decoder_context->codec_context[index]->channel_layout;
   encoder_context->codec_context[index]->channels = av_get_channel_layout_nb_channels(encoder_context->codec_context[index]->channel_layout);
 
-  encoder_context->stream[index] = avformat_new_stream(encoder_context->format_context, encoder_context->codec[index]);
+  encoder_context->stream[index] = avformat_new_stream(encoder_context->format_context, NULL);
   //encoder_context->time_base = (AVRational){1, encoder_context->sample_rate};
   encoder_context->stream[index]->time_base = encoder_context->codec_context[index]->time_base;
 
@@ -334,8 +331,6 @@ static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContex
     logging("failed to copy encoder parameters to output stream");
     return -1;
   }
-  // copy
-  // https://stackoverflow.com/questions/17592120/ffmpeg-how-to-copy-codec-video-and-audio-from-mp4-container-to-ts-cont
   return 0;
 }
 
@@ -355,6 +350,9 @@ static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *
     logging("error while preparing audio copy");
     return -1;
   }
+
+  if (encoder_context->format_context->oformat->flags & AVFMT_GLOBALHEADER)
+    encoder_context->format_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
   if (!(encoder_context->format_context->oformat->flags & AVFMT_NOFILE)) {
     if (avio_open(&encoder_context->format_context->pb, encoder_context->file_name, AVIO_FLAG_WRITE) < 0) {
