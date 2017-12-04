@@ -20,8 +20,8 @@ typedef struct _TranscodeContext {
 } TranscodeContext;
 
 static void logging(const char *fmt, ...);
-static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame, int stream_index);
-static int encode_frame(AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index);
+static int decode_packet(TranscodeContext *decoder_context, TranscodeContext *encoder_context, AVPacket *packet, AVFrame *frame, int stream_index);
+static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *encoder_context, AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index);
 static int prepare_decoder(TranscodeContext *decoder_context);
 static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *decoder_context);
 
@@ -64,7 +64,14 @@ int main(int argc, char *argv[])
     logging("AVPacket->pts %" PRId64, input_packet->pts);
 
     if (input_packet->stream_index == decoder_context->video_stream_index) {
-      response = decode_packet(decoder_context->format_context, input_packet, decoder_context->codec_context[input_packet->stream_index], input_frame, input_packet->stream_index);
+      response = decode_packet(
+          decoder_context,
+          encoder_context,
+          input_packet,
+          input_frame,
+          input_packet->stream_index
+          );
+
       if (response < 0)
         break;
       if (--how_many_packets_to_process <= 0) break;
@@ -84,7 +91,7 @@ int main(int argc, char *argv[])
     }
   }
   // flush all frames
-  encode_frame(decoder_context->format_context, decoder_context->codec_context[encoder_context->video_stream_index], NULL, encoder_context->video_stream_index);
+  encode_frame(decoder_context, encoder_context, decoder_context->format_context, decoder_context->codec_context[encoder_context->video_stream_index], NULL, encoder_context->video_stream_index);
 
   av_write_trailer(encoder_context->format_context);
 
@@ -102,12 +109,12 @@ int main(int argc, char *argv[])
 
 static void logging(const char *fmt, ...)
 {
-    va_list args;
-    fprintf( stderr, "LOG: " );
-    va_start( args, fmt );
-    vfprintf( stderr, fmt, args );
-    va_end( args );
-    fprintf( stderr, "\n" );
+  va_list args;
+  fprintf( stderr, "LOG: " );
+  va_start( args, fmt );
+  vfprintf( stderr, fmt, args );
+  va_end( args );
+  fprintf( stderr, "\n" );
 }
 
 static int prepare_decoder(TranscodeContext *decoder_context) {
@@ -170,8 +177,11 @@ static int prepare_decoder(TranscodeContext *decoder_context) {
   return 0;
 }
 
-static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCodecContext *codec_context, AVFrame *frame, int stream_index)
+static int decode_packet(TranscodeContext *decoder_context, TranscodeContext *encoder_context, AVPacket *packet, AVFrame *frame, int stream_index)
 {
+  AVFormatContext *format_context = decoder_context->format_context;
+  AVCodecContext *codec_context = decoder_context->codec_context[stream_index];
+
   int response = avcodec_send_packet(codec_context, packet);
 
   if (response < 0) {
@@ -200,7 +210,7 @@ static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCo
             frame->key_frame,
             frame->coded_picture_number
             );
-        encode_frame(format_context, codec_context, frame, stream_index);
+        encode_frame(decoder_context, encoder_context, format_context, codec_context, frame, stream_index);
       }
       av_frame_unref(frame);
     }
@@ -208,7 +218,7 @@ static int decode_packet(AVFormatContext *format_context, AVPacket *packet, AVCo
   return 0;
 }
 
-static int encode_frame(AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index)
+static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *encoder_context, AVFormatContext *format_context, AVCodecContext *codec_context, AVFrame *frame, int stream_index)
 {
   AVPacket *output_packet = av_packet_alloc();
   if (!output_packet) {
@@ -234,10 +244,11 @@ static int encode_frame(AVFormatContext *format_context, AVCodecContext *codec_c
 
     /* prepare packet for muxing */
     output_packet->stream_index = stream_index;
-    //av_packet_rescale_ts(&enc_pkt,
-    //    stream_ctx[stream_index].codec_context->time_base,
-    //    ofmt_ctx->streams[stream_index]->time_base);
-    //av_log(NULL, AV_LOG_DEBUG, "Muxing frame\n");
+
+    av_packet_rescale_ts(output_packet,
+        decoder_context->stream[stream_index]->time_base,
+        encoder_context->stream[stream_index]->time_base
+        );
     /* mux encoded frame */
     ret = av_interleaved_write_frame(format_context, output_packet);
 
@@ -253,6 +264,7 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
   int index = decoder_context->video_stream_index;
   encoder_context->stream[index] = avformat_new_stream(encoder_context->format_context, NULL);
   encoder_context->codec[index] = avcodec_find_encoder_by_name("libx264");
+
   if (!encoder_context->codec[index]) {
     logging("could not find the proper codec");
     return -1;
