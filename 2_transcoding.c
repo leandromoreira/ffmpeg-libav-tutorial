@@ -91,7 +91,8 @@ int main(int argc, char *argv[])
     }
   }
   // flush all frames
-  encode_frame(decoder_context, encoder_context, decoder_context->format_context, decoder_context->codec_context[encoder_context->video_stream_index], NULL, encoder_context->video_stream_index);
+  encode_frame(decoder_context, encoder_context, encoder_context->format_context, encoder_context->codec_context[encoder_context->video_stream_index], NULL, encoder_context->video_stream_index);
+  // should I do it for the audio stream too?
 
   av_write_trailer(encoder_context->format_context);
 
@@ -179,13 +180,12 @@ static int prepare_decoder(TranscodeContext *decoder_context) {
 
 static int decode_packet(TranscodeContext *decoder_context, TranscodeContext *encoder_context, AVPacket *packet, AVFrame *frame, int stream_index)
 {
-  AVFormatContext *format_context = decoder_context->format_context;
   AVCodecContext *codec_context = decoder_context->codec_context[stream_index];
 
   int response = avcodec_send_packet(codec_context, packet);
 
   if (response < 0) {
-    logging("Error while sending a packet to the decoder: %s", av_err2str(response));
+    logging("DECODER: Error while sending a packet to the decoder: %s", av_err2str(response));
     return response;
   }
 
@@ -195,7 +195,7 @@ static int decode_packet(TranscodeContext *decoder_context, TranscodeContext *en
     if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
       break;
     } else if (response < 0) {
-      logging("Error while receiving a frame from the decoder: %s", av_err2str(response));
+      logging("DECODER: Error while receiving a frame from the decoder: %s", av_err2str(response));
       return response;
     }
 
@@ -210,7 +210,7 @@ static int decode_packet(TranscodeContext *decoder_context, TranscodeContext *en
             frame->key_frame,
             frame->coded_picture_number
             );
-        encode_frame(decoder_context, encoder_context, format_context, codec_context, frame, stream_index);
+        encode_frame(decoder_context, encoder_context, encoder_context->format_context, encoder_context->codec_context[stream_index], frame, stream_index);
       }
       av_frame_unref(frame);
     }
@@ -235,10 +235,10 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
     ret = avcodec_receive_packet(codec_context, output_packet);
 
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-      logging("Error while receiving a packet from the decoder: %s", av_err2str(ret));
+      logging("ENCODING: Error while receiving a packet from the encoder: %s", av_err2str(ret));
       return -1;
     } else if (ret < 0) {
-      logging("Error while receiving a packet from the decoder: %s", av_err2str(ret));
+      logging("ENCODING: Error while receiving a packet from the encoder: %s", av_err2str(ret));
       return -1;
     }
 
@@ -246,15 +246,19 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
     output_packet->stream_index = stream_index;
 
     av_packet_rescale_ts(output_packet,
-        decoder_context->stream[stream_index]->time_base,
+        decoder_context->codec_context[stream_index]->time_base,
         encoder_context->stream[stream_index]->time_base
         );
     /* mux encoded frame */
     ret = av_interleaved_write_frame(format_context, output_packet);
 
+    if (ret != 0) {
+      logging("Error %d while receiving a packet from the decoder: %s", ret, av_err2str(ret));
+    }
+
     logging("Write packet %3"PRId64" (size=%5d)", output_packet->pts, output_packet->size);
-    av_packet_unref(output_packet);
   }
+  av_packet_unref(output_packet);
   av_packet_free(&output_packet);
   return 0;
 }
@@ -282,10 +286,15 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
   av_opt_set(&encoder_options, "min-keyint", "60", 0);
   av_opt_set(&encoder_options, "no-scenecut", "1", 0);
 
-  encoder_context->codec_context[index]->height = decoder_context->codec_context[index]->height;
-  encoder_context->codec_context[index]->width = decoder_context->codec_context[index]->width;
-  encoder_context->codec_context[index]->time_base = av_inv_q(decoder_context->codec_context[index]->framerate);
-  encoder_context->codec_context[index]->sample_aspect_ratio = decoder_context->codec_context[index]->sample_aspect_ratio;
+  AVCodecContext *encoder_codec_context = encoder_context->codec_context[index];
+  av_opt_set(encoder_codec_context->priv_data, "keyint", "60", 0);
+  av_opt_set(encoder_codec_context->priv_data, "min-keyint", "60", 0);
+  av_opt_set(encoder_codec_context->priv_data, "no-scenecut", "1", 0);
+
+  encoder_codec_context->height = decoder_context->codec_context[index]->height;
+  encoder_codec_context->width = decoder_context->codec_context[index]->width;
+  encoder_codec_context->time_base = av_inv_q(decoder_context->codec_context[index]->framerate);
+  encoder_codec_context->sample_aspect_ratio = decoder_context->codec_context[index]->sample_aspect_ratio;
 
   if (encoder_context->codec[index]->pix_fmts)
     encoder_context->codec_context[index]->pix_fmt = encoder_context->codec[index]->pix_fmts[0];
@@ -294,13 +303,13 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
 
   encoder_context->codec_context[index]->time_base = decoder_context->stream[index]->time_base;
 
-  if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], &encoder_options) < 0) {
-    logging("could not open the codec");
+  if (avcodec_parameters_from_context(encoder_context->stream[index]->codecpar, encoder_context->codec_context[index]) < 0) {
+    logging("could not copy encoder parameters to output stream");
     return -1;
   }
 
-  if (avcodec_parameters_from_context(encoder_context->stream[index]->codecpar, encoder_context->codec_context[index]) < 0) {
-    logging("could not copy encoder parameters to output stream");
+  if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], &encoder_options) < 0) {
+    logging("could not open the codec");
     return -1;
   }
 
@@ -322,15 +331,16 @@ static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContex
   //encoder_context->time_base = (AVRational){1, encoder_context->sample_rate};
   encoder_context->stream[index]->time_base = encoder_context->codec_context[index]->time_base;
 
+  if (avcodec_parameters_from_context(encoder_context->stream[index]->codecpar, encoder_context->codec_context[index]) < 0) {
+    logging("failed to copy encoder parameters to output stream");
+    return -1;
+
+  }
   if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], NULL) < 0) {
     logging("failed to open codec through avcodec_open2");
     return -1;
   }
 
-  if (avcodec_parameters_from_context(encoder_context->stream[index]->codecpar, encoder_context->codec_context[index]) < 0) {
-    logging("failed to copy encoder parameters to output stream");
-    return -1;
-  }
   return 0;
 }
 
