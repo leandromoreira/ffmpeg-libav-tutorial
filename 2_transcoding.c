@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
   av_register_all();
 
-  TranscodeContext *decoder_context = malloc(sizeof(TranscodeContext));
+  TranscodeContext *decoder_context = calloc(1, sizeof(TranscodeContext));
   decoder_context->file_name = argv[1];
 
   if (prepare_decoder(decoder_context)) {
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  TranscodeContext *encoder_context = malloc(sizeof(TranscodeContext));
+  TranscodeContext *encoder_context = calloc(1, sizeof(TranscodeContext));
   encoder_context->file_name = argv[2];
 
   if (prepare_encoder(encoder_context, decoder_context)) {
