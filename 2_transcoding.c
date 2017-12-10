@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
       if (response < 0)
         break;
-      if (--how_many_packets_to_process <= 0) break;
+      //if (--how_many_packets_to_process <= 0) break;
       av_packet_unref(input_packet);
     } else {
       // just copying audio stream
@@ -235,8 +235,7 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
     ret = avcodec_receive_packet(codec_context, output_packet);
 
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-      logging("ENCODING: Error while receiving a packet from the encoder: %s", av_err2str(ret));
-      return -1;
+      break;
     } else if (ret < 0) {
       logging("ENCODING: Error while receiving a packet from the encoder: %s", av_err2str(ret));
       return -1;
@@ -256,7 +255,7 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
       logging("Error %d while receiving a packet from the decoder: %s", ret, av_err2str(ret));
     }
 
-    logging("Write packet %3"PRId64" (size=%5d)", output_packet->pts, output_packet->size);
+    logging("Write packet %d (size=%d)", output_packet->pts, output_packet->size);
   }
   av_packet_unref(output_packet);
   av_packet_free(&output_packet);
