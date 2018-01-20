@@ -8,7 +8,7 @@ FFmpeg libav has lots of bindings for many languages like [python](https://mikeb
 
 We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `FFmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
 
-Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that worths to be studied.
+Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that is worth studying.
 
 __Table of Contents__
 
@@ -44,7 +44,7 @@ Zeitgenössische Illustration (1886)
 
 ## audio - what you listen!
 
-Although a muted video can express a quite amount of feelings, adding sound to it brings more pleasure to the experience.
+Although a muted video can express a variety of feelings, adding sound to it brings more pleasure to the experience.
 
 Sound is the vibration that propagates as a wave of pressure, through the air or any other transmission medium, such as a gas, liquid or solid.
 
@@ -71,7 +71,7 @@ fps = 24 //frames_per_second
 required_storage = tis * fps * toppf * cpp
 ```
 
-This video would require us a storage of approximately `250.28GB` or a bandwidth of `1.11Gbps`! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+This video would require approximately `250.28GB` of storage or `1.11Gbps` of bandwidth! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
 ## container - a comfy place for audio and video
 
@@ -88,7 +88,7 @@ Usually we can infer the format of a file by looking at its extension: for insta
 
 > A complete, cross-platform solution to record, convert and stream audio and video.
 
-To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/). Chances are you know/use directly or indirectly it (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)).
+To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/). Chances are you already know/use it directly or indirectly (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)).
 
 It has a command line program called `ffmpeg`, a very simple yet powerful binary.
 For instance, you can convert from `mp4` to the container `avi` just by typing the follow command:
@@ -98,11 +98,11 @@ $ ffmpeg -i input.mp4 output.avi
 ```
 
 We just made a **remuxing** here, which is converting from one container to another one.
-Technically FFmpeg could be also be doing a transcoding but we'll talk about that later.
+Technically FFmpeg could also be doing a transcoding but we'll talk about that later.
 
 ## FFmpeg command line tool 101
 
-FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that explains greatly how it works.
+FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that does a great job of explaining how it works.
 
 To make things short, the FFmpeg command line program expects the following argument format to perform its actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
 
@@ -257,7 +257,7 @@ Since the [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool t
 FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs.
 Usually, when you install FFmpeg, it installs automatically all these libraries. I'll be referring to the set of these libraries as **FFmpeg libav**.
 
-> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C the Hard Way.
+> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/), particularly his book Learn C the Hard Way.
 
 ## Chapter 0 - The infamous hello world
 This hello world actually won't show the message `"hello world"` in the terminal :tongue:
