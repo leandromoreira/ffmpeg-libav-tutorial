@@ -1,9 +1,9 @@
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
-I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial.  
+I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial.
 Unfortunately it was deprecated, so I decided to write this one.
 
-Most of the code in here will be in c **but don't worry**: you can easily understand and apply it to your preferred language.  
+Most of the code in here will be in c **but don't worry**: you can easily understand and apply it to your preferred language.
 FFmpeg libav has lots of bindings for many languages like [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi` (here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
 
 We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `FFmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
@@ -35,7 +35,7 @@ __Table of Contents__
 
 ## video - what you see!
 
-If you have a sequence series of images and change them at a given frequency (let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision).  
+If you have a sequence series of images and change them at a given frequency (let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision).
 In summary this is the very basic idea behind a video: **a series of pictures / frames running at a given rate**.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
@@ -90,14 +90,14 @@ Usually we can infer the format of a file by looking at its extension: for insta
 
 To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/). Chances are you know/use directly or indirectly it (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)).
 
-It has a command line program called `ffmpeg`, a very simple yet powerful binary.  
+It has a command line program called `ffmpeg`, a very simple yet powerful binary.
 For instance, you can convert from `mp4` to the container `avi` just by typing the follow command:
 
 ```bash
 $ ffmpeg -i input.mp4 output.avi
 ```
 
-We just made a **remuxing** here, which is converting from one container to another one.  
+We just made a **remuxing** here, which is converting from one container to another one.
 Technically FFmpeg could be also be doing a transcoding but we'll talk about that later.
 
 ## FFmpeg command line tool 101
@@ -112,7 +112,7 @@ To make things short, the FFmpeg command line program expects the following argu
 4. output file options
 5. output url
 
-The parts 2, 3, 4 and 5 can be as many as you need.  
+The parts 2, 3, 4 and 5 can be as many as you need.
 It's easier to understand this argument format in action:
 
 ``` bash
@@ -127,7 +127,7 @@ bunny_1080p_60fps_vp9.webm # output url
 ```
 This command takes an input file `mp4` containing two streams (an audio encoded with `aac` CODEC and a video encoded using `h264` CODEC) and convert it to `webm`, changing its audio and video CODECs too.
 
-We could simplify the command above but then be aware that FFmpeg will adopt or guess the default values for you.  
+We could simplify the command above but then be aware that FFmpeg will adopt or guess the default values for you.
 For instance when you just type `ffmpeg -i input.avi output.mp4` what audio/video CODEC does it use to produce the `output.mp4`?
 
 Werner Robitza wrote a must read/execute [tutorial about encoding and editing with FFmpeg](http://slhck.info/ffmpeg-encoding-course/#/).
@@ -244,7 +244,7 @@ PS: I stole this example from the [Instructions to playback Adaptive WebM using 
 
 ## Going beyond
 
-There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly).  
+There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly).
 I use it in conjunction with *iMovie* to produce/edit some videos for YouTube and you can certainly use it professionally.
 
 # Learn FFmpeg libav the Hard Way
@@ -254,13 +254,13 @@ I use it in conjunction with *iMovie* to produce/edit some videos for YouTube an
 
 Since the [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do essential tasks over the media files, how can we use it in our programs?
 
-FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs.  
+FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs.
 Usually, when you install FFmpeg, it installs automatically all these libraries. I'll be referring to the set of these libraries as **FFmpeg libav**.
 
 > This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/) specially his book Learn C the Hard Way.
 
 ## Chapter 0 - The infamous hello world
-This hello world actually won't show the message `"hello world"` in the terminal :tongue:  
+This hello world actually won't show the message `"hello world"` in the terminal :tongue:
 Instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and, in the end, we'll **decode some frames and save them as image files**.
 
 ### FFmpeg libav architecture
@@ -271,10 +271,10 @@ Here's a diagram of the process of decoding a video:
 
 ![ffmpeg libav architecture - decoding process](/img/decoding.png)
 
-You'll first need to load your media file into a component called [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (the video container is also known as format).  
+You'll first need to load your media file into a component called [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (the video container is also known as format).
 It actually doesn't fully load the whole file: it often only reads the header.
 
-Once we loaded the minimal **header of our container**, we can access its streams (think of them as a rudimentary audio and video data).  
+Once we loaded the minimal **header of our container**, we can access its streams (think of them as a rudimentary audio and video data).
 Each stream will be available in a component called [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 > Stream is a fancy name for a continuous flow of data.
@@ -289,14 +289,12 @@ The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk
 
 > #### TLDR; show me the [code](/0_hello_world.c) and execution.
 > ```bash
-> $ make download
-> $ make cut_smaller_version
-> $ make hello_world
+> $ make
 > ```
 
 We'll skip some details, but don't worry: the [source code is available at github](/0_hello_world.c).
 
-The first thing we need to do is to register all the codecs, formats and protocols.  
+The first thing we need to do is to register all the codecs, formats and protocols.
 To do it, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3):
 
 ```c
@@ -309,7 +307,7 @@ Now we're going to allocate memory to the component [`AVFormatContext`](http://f
 AVFormatContext *pFormatContext = avformat_alloc_context();
 ```
 
-Now we're going to open the file and read its header and fill the `AVFormatContext` with minimal information about the format (notice that usually the codecs are not opened).  
+Now we're going to open the file and read its header and fill the `AVFormatContext` with minimal information about the format (notice that usually the codecs are not opened).
 The function used to do this is [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49). It expects an `AVFormatContext`, a `filename` and two optional arguments: the [`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html) (if you pass `NULL`, FFmpeg will guess the format) and the [`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) (which are the options to the demuxer).
 
 ```c
@@ -322,7 +320,7 @@ We can print the format name and the media duration:
 printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
 ```
 
-To access the `streams`, we need to read data from the media. The function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that.  
+To access the `streams`, we need to read data from the media. The function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that.
 Now, the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream (an [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html)).
 
 ```c
