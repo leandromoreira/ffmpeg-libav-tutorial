@@ -456,7 +456,7 @@ In the last example, we saved some frames that can be seen here:
 
 When we're designing a video player we need to **play each frame at a given pace**, otherwise it would be hard to pleasantly see the video either because it's playing so fast or so slow.
 
-Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is know as **timescale**) divisible by the **frame rate (fps)**.
+Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is known as **timescale**) divisible by the **frame rate (fps)**.
 
 It's easier to understand when we look at some examples, let's simulate some scenarios.
 
