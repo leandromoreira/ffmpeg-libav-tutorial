@@ -60,7 +60,7 @@ https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
 
 But if we chose to pack millions of images in a single file and called it a movie, we might end up with a huge file. Let's do the math:
 
-Suppose we are creating a video with a resolution of `1080 x 1920` (height x width) and that we'll spend `3 bytes` per pixel (the minimal point at a screen) to encode the color (or [24 bit color](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), what gives us 16,777,215 different colors) and this video runs at `24 frames per second` and it is `30 minutes` long.
+Suppose we are creating a video with a resolution of `1080 x 1920` (height x width) and that we'll spend `3 bytes` per pixel (the minimal point at a screen) to encode the color (or [24 bit color](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), what gives us 16,777,216 different colors) and this video runs at `24 frames per second` and it is `30 minutes` long.
 
 ```c
 toppf = 1080 * 1920 //total_of_pixels_per_frame
