@@ -51,7 +51,7 @@ Sound is the vibration that propagates as a wave of pressure, through the air or
 > In a digital audio system, a microphone converts sound to an analog electrical signal, then an analog-to-digital converter (ADC)—typically using [pulse-code modulation—converts (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) the analog signal into a digital signal.
 
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
-https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg
+>[Source](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
 
 ## codec - shrinking data
 
