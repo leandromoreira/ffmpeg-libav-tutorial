@@ -116,6 +116,7 @@ The parts 2, 3, 4 and 5 can be as many as you need.
 It's easier to understand this argument format in action:
 
 ``` bash
+# WARNING: this file is around 300MB
 $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
 
 $ ffmpeg \
@@ -289,6 +290,7 @@ The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk
 
 > #### TLDR; show me the [code](/0_hello_world.c) and execution.
 > ```bash
+> # WARNING: this file is around 300MB
 > $ make
 > ```
 
