@@ -286,12 +286,15 @@ The **data inside the packets are still coded** (compressed) and in order to dec
 
 The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) and finally, this component gives us **the uncompressed frame**.  Noticed that the same terminology/process is used either by audio and video stream.
 
+### Requirements
+
+Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment.**
+
 ### Chapter 0 - code walkthrough
 
 > #### TLDR; show me the [code](/0_hello_world.c) and execution.
 > ```bash
-> # WARNING: this file is around 300MB
-> $ make
+> $ make run_hello
 > ```
 
 We'll skip some details, but don't worry: the [source code is available at github](/0_hello_world.c).
