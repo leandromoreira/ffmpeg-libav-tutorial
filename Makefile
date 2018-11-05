@@ -1,15 +1,11 @@
-VIDEO_URL := http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
-
-hello_world: clean small_bunny_1080p_60fps.mp4
-	mkdir build
-	gcc -g -Wall -o build/hello_world -lavformat -lavcodec -lswscale -lavutil -lz 0_hello_world.c \
-	  && ./build/hello_world $(lastword $?)
-
-bunny_1080p_60fps.mp4:
-	wget -O $@ $(VIDEO_URL)
-
-small_bunny_1080p_60fps.mp4: bunny_1080p_60fps.mp4
-	ffmpeg -y -i $? -c copy -ss 00:01:24 -t 00:00:10 $@
-
 clean:
-	@rm -rf ./build
+	@rm -rf ./build/*
+
+make_hello: clean
+	docker run --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel \
+	  gcc -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/0_hello_world.c \
+	  -lavcodec -lavformat -lavfilter -lavdevice -lswresample -lswscale -lavutil \
+	  -o /files/build/hello
+
+run_hello: make_hello
+	docker run --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel /files/build/hello /files/small_bunny_1080p_60fps.mp4
