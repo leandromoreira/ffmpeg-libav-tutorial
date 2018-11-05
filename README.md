@@ -299,14 +299,7 @@ Since some people were [facing issues while compiling or running the examples](h
 
 We'll skip some details, but don't worry: the [source code is available at github](/0_hello_world.c).
 
-The first thing we need to do is to register all the codecs, formats and protocols.
-To do it, we just need to call the function [`av_register_all`](http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3):
-
-```c
-av_register_all();
-```
-
-Now we're going to allocate memory to the component [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) that will hold  information about the format (container).
+We're going to allocate memory to the component [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) that will hold  information about the format (container).
 
 ```c
 AVFormatContext *pFormatContext = avformat_alloc_context();

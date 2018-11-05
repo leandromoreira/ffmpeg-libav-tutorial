@@ -30,10 +30,6 @@ int main(int argc, const char *argv[])
 {
   logging("initializing all the containers, codecs and protocols.");
 
-  // Initialize the lavf/lavc library and register all the formats, codecs and protocols.
-  // http://ffmpeg.org/doxygen/trunk/group__lavf__core.html#ga917265caec45ef5a0646356ed1a507e3
-  av_register_all();
-
   // AVFormatContext holds the header information from the format (Container)
   // Allocating memory for this component
   // http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html
