@@ -55,7 +55,7 @@ int main(int argc, const char *argv[])
   // now we have access to some information about our file
   // since we read its header we can say what format (container) it's
   // and some other information related to the format itself.
-  logging("format %s, duration %lld us, bit_rate %lld", pFormatContext->iformat->long_name, pFormatContext->duration, pFormatContext->bit_rate);
+  logging("format %s, duration %lld us, bit_rate %lld", pFormatContext->iformat->name, pFormatContext->duration, pFormatContext->bit_rate);
 
   logging("finding stream info from format");
   // read Packets from the Format to get stream information
@@ -115,7 +115,7 @@ int main(int argc, const char *argv[])
     }
 
     // print its name, id and bitrate
-    logging("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pCodecParameters->bit_rate);
+    logging("\tCodec %s ID %d bit_rate %lld", pLocalCodec->name, pLocalCodec->id, pCodecParameters->bit_rate);
   }
   // https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html
   AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
