@@ -303,7 +303,7 @@ RUN \
         rm -rf CMakeCache.txt CMakeFiles ; \
         mkdir -p ./aom_build ; \
         cd ./aom_build ; \
-        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 ..; \
+        cmake -DCMAKE_INSTALL_PREFIX="${PREFIX}" -DBUILD_SHARED_LIBS=1 -DCONFIG_LOWBITDEPTH=1 ..; \
         make ; \
         make install ; \
         rm -rf ${dir}
