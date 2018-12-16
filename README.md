@@ -29,7 +29,8 @@ __Table of Contents__
 * [Learn FFmpeg libav the Hard Way](#learn-ffmpeg-libav-the-hard-way)
   * [Chapter 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
     * [FFmpeg libav architecture](#ffmpeg-libav-architecture)
-    * [Chapter 0 - code walkthrough](#chapter-0---code-walkthrough)
+  * [Chapter 1 - timing](#chapter-1---syncing-audio-and-video)
+  * [Chapter 2 - remuxing](#chapter-2---remuxing)
 
 # Intro
 
