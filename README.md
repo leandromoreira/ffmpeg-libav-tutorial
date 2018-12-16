@@ -500,4 +500,200 @@ LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
 LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 ```
 
-## Chapter 2 - transcoding
+## Chapter 2 - remuxing
+
+Remuxnig is the act of changing from one format (container) to another, for instance, we can change an MP4 video to a [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) without much pain using FFmpeg:
+
+```bash
+ffmpeg input.mp4 -c copy output.ts
+```
+
+It'll demux the mp4 but it won't decode or encode it (`-c copy`) and in the end, it'll mux it into a `mpegts` file. If you don't provide the format `-f` the ffmpeg will try to guess it based on the file's extension.
+
+The general usage of FFmpeg or the libav follows a pattern/architecture or workflow:
+* **[protocol layer](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - it accepts an `input` (a `file` for instance but it could be a `rtmp` or `HTTP` input as well)
+* **[format layer](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - it `demuxes` its content, revealing mostly metadata and its streams
+* **[codec layer](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - it `decodes` its compressed streams data <sup>*optional*</sup>
+* **[pixel layer](https://ffmpeg.org/doxygen/trunk/group__lavfi.html)** - it can also apply some `filters` to the raw frames (like resizing)<sup>*optional*</sup>
+* and then it does the reverse path
+* **[codec layer](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - it `encodes` (or `re-encodes` or even `transcodes`) the raw frames<sup>*optional*</sup>
+* **[format layer](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - it `muxes` (or `remuxes`) the raw streams (the compressed data)
+* **[protocol layer](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - and finally the muxed data is sent to an `output` (another file or maybe a network remote server)
+
+![ffmpeg libav workflow](/img/ffmpeg_libav_workflow.jpeg)
+> This graph is strongly inspired by [Leixiaohua's](http://leixiaohua1020.github.io/#ffmpeg-development-examples) and [Slhck's](https://slhck.info/ffmpeg-encoding-course/#/9) works.
+
+Now let's code an example using libav to provide the same effect as in `ffmpeg input.mp4 -c copy output.ts`.
+
+We're going to read from an input (`input_format_context`) and change it to another output (`output_format_context`).
+
+```c
+AVFormatContext *input_format_context = NULL;
+AVFormatContext *output_format_context = NULL;
+```
+
+We start doing the usually allocate memory and open the input format. For this specific case, we're going to open an input file and allocate memory for an output file.
+
+```c
+if ((ret = avformat_open_input(&input_format_context, in_filename, NULL, NULL)) < 0) {
+  fprintf(stderr, "Could not open input file '%s'", in_filename);
+  goto end;
+}
+if ((ret = avformat_find_stream_info(input_format_context, NULL)) < 0) {
+  fprintf(stderr, "Failed to retrieve input stream information");
+  goto end;
+}
+
+avformat_alloc_output_context2(&output_format_context, NULL, NULL, out_filename);
+if (!output_format_context) {
+  fprintf(stderr, "Could not create output context\n");
+  ret = AVERROR_UNKNOWN;
+  goto end;
+}
+```
+
+We're going to remux only the video, audio and subtitle types of streams so we're holding what streams we'll be using into an array of indexes.
+
+```c
+number_of_streams = input_format_context->nb_streams;
+streams_list = av_mallocz_array(number_of_streams, sizeof(*streams_list));
+```
+
+Just after we allocated the required memory, we're going to loop throughout all the streams and for each one we need to create new out stream into our output format context, using the [avformat_new_stream](https://ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827) function. Notice that we're marking all the streams that aren't video, audio or subtitle so we can skip them after.
+
+```c
+for (i = 0; i < input_format_context->nb_streams; i++) {
+  AVStream *out_stream;
+  AVStream *in_stream = input_format_context->streams[i];
+  AVCodecParameters *in_codecpar = in_stream->codecpar;
+  if (in_codecpar->codec_type != AVMEDIA_TYPE_AUDIO &&
+      in_codecpar->codec_type != AVMEDIA_TYPE_VIDEO &&
+      in_codecpar->codec_type != AVMEDIA_TYPE_SUBTITLE) {
+    streams_list[i] = -1;
+    continue;
+  }
+  streams_list[i] = stream_index++;
+  out_stream = avformat_new_stream(output_format_context, NULL);
+  if (!out_stream) {
+    fprintf(stderr, "Failed allocating output stream\n");
+    ret = AVERROR_UNKNOWN;
+    goto end;
+  }
+  ret = avcodec_parameters_copy(out_stream->codecpar, in_codecpar);
+  if (ret < 0) {
+    fprintf(stderr, "Failed to copy codec parameters\n");
+    goto end;
+  }
+}
+```
+
+Now we can create the output file.
+
+```c
+if (!(output_format_context->oformat->flags & AVFMT_NOFILE)) {
+  ret = avio_open(&output_format_context->pb, out_filename, AVIO_FLAG_WRITE);
+  if (ret < 0) {
+    fprintf(stderr, "Could not open output file '%s'", out_filename);
+    goto end;
+  }
+}
+
+ret = avformat_write_header(output_format_context, NULL);
+if (ret < 0) {
+  fprintf(stderr, "Error occurred when opening output file\n");
+  goto end;
+}
+```
+
+After that, we can copy the streams, packet by packet, from our input to our output streams. We'll loop while it has packets (`av_read_frame`), for each packet we need to re-calculate the PTS and DTS to finally write it (`av_interleaved_write_frame`) to our output format context.
+
+```c
+while (1) {
+  AVStream *in_stream, *out_stream;
+  ret = av_read_frame(input_format_context, &packet);
+  if (ret < 0)
+    break;
+  in_stream  = input_format_context->streams[packet.stream_index];
+  if (packet.stream_index >= number_of_streams || streams_list[packet.stream_index] < 0) {
+    av_packet_unref(&packet);
+    continue;
+  }
+  packet.stream_index = streams_list[packet.stream_index];
+  out_stream = output_format_context->streams[packet.stream_index];
+  /* copy packet */
+  packet.pts = av_rescale_q_rnd(packet.pts, in_stream->time_base, out_stream->time_base, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+  packet.dts = av_rescale_q_rnd(packet.dts, in_stream->time_base, out_stream->time_base, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+  packet.duration = av_rescale_q(packet.duration, in_stream->time_base, out_stream->time_base);
+  // https://ffmpeg.org/doxygen/trunk/structAVPacket.html#ab5793d8195cf4789dfb3913b7a693903
+  packet.pos = -1;
+
+  //https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga37352ed2c63493c38219d935e71db6c1
+  ret = av_interleaved_write_frame(output_format_context, &packet);
+  if (ret < 0) {
+    fprintf(stderr, "Error muxing packet\n");
+    break;
+  }
+  av_packet_unref(&packet);
+}
+```
+
+To finalize we need to write the stream trailer to an output media file with [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13) function.
+
+```c
+av_write_trailer(output_format_context);
+```
+
+Now we're ready to test it and the first test will be a format (video container) conversion from a MP4 to a MPEG-TS video file. We're basically making the command line `ffmpeg input.mp4 -c copy output.ts` with libav.
+
+```bash
+make run_remuxing_ts
+```
+
+It's working!!! don't you trust me?! you shouldn't, we can check it with `ffprobe`:
+
+```bash
+ffprobe -i remuxed_small_bunny_1080p_60fps.ts
+
+Input #0, mpegts, from 'remuxed_small_bunny_1080p_60fps.ts':
+  Duration: 00:00:10.03, start: 0.000000, bitrate: 2751 kb/s
+  Program 1
+    Metadata:
+      service_name    : Service01
+      service_provider: FFmpeg
+    Stream #0:0[0x100]: Video: h264 (High) ([27][0][0][0] / 0x001B), yuv420p(progressive), 1920x1080 [SAR 1:1 DAR 16:9], 60 fps, 60 tbr, 90k tbn, 120 tbc
+    Stream #0:1[0x101]: Audio: ac3 ([129][0][0][0] / 0x0081), 48000 Hz, 5.1(side), fltp, 320 kb/s
+```
+
+To sum up what we did here in a graph, we can revisit our initial [idea about how libav works](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-libav-architecture) but showing that we skipped the codec part.
+
+![remuxing libav components](/img/remuxing_libav_components.png)
+
+Before we end this chapter I'd like to show an important part of the remuxing process, **you can pass options to the muxer**. Let's say we want to delivery [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding) format for that matter we need to use [fragmented mp4](https://stackoverflow.com/a/35180327) (sometimes referred as `fmp4`) instead of MPEG-TS or plain MPEG-4.
+
+With the [command line we can do that easily](https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#Fragmenting).
+
+```
+ffmpeg -i non_fragmented.mp4 -movflags frag_keyframe+empty_moov+default_base_moof fragmented.mp4
+```
+
+Almost equally easy as the command line is the libav version of it, we just need to pass the options when write the output header, just before the packets copy.
+
+```c
+AVDictionary* opts = NULL;
+av_dict_set(&opts, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
+ret = avformat_write_header(output_format_context, &opts);
+```
+
+We now can generate this fragmented mp4 file:
+
+```bash
+make run_remuxing_fragmented_mp4
+```
+
+But to make sure that I'm not lying to you. You can use the amazing site/tool [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) or the site [http://mp4parser.com/](http://mp4parser.com/) to see the differences, first load up the "common" mp4.
+
+![mp4 boxes](/img/boxes_normal_mp4.png)
+
+As you can see it has a single `mdat` atom/box, **this is place where the video and audio frames are**. Now load the fragmented mp4 to see which how it spreads the `mdat` boxes.
+
+![](/img/boxes_fragmente_mp4.png)
