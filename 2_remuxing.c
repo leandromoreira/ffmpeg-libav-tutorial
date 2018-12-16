@@ -11,6 +11,14 @@ int main(int argc, char **argv)
   int stream_index = 0;
   int *streams_list = NULL;
   int number_of_streams = 0;
+  int fragmented_mp4_options = 0;
+
+  if (argc < 3) {
+    printf("You need to pass at least two parameters.\n");
+    return -1;
+  } else if (argc == 4) {
+    fragmented_mp4_options = 1;
+  }
 
   in_filename  = argv[1];
   out_filename = argv[2];
@@ -75,8 +83,14 @@ int main(int argc, char **argv)
       goto end;
     }
   }
+  AVDictionary* opts = NULL;
+
+  if (fragmented_mp4_options) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE
+    av_dict_set(&opts, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
+  }
   // https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga18b7b10bb5b94c4842de18166bc677cb
-  ret = avformat_write_header(output_format_context, NULL);
+  ret = avformat_write_header(output_format_context, &opts);
   if (ret < 0) {
     fprintf(stderr, "Error occurred when opening output file\n");
     goto end;
