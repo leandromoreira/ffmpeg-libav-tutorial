@@ -503,7 +503,7 @@ LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 
 ## Chapter 2 - remuxing
 
-Remuxnig is the act of changing from one format (container) to another, for instance, we can change an MP4 video to a [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) without much pain using FFmpeg:
+Remuxing is the act of changing from one format (container) to another, for instance, we can change a [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) video to a [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) one without much pain using FFmpeg:
 
 ```bash
 ffmpeg input.mp4 -c copy output.ts
@@ -697,4 +697,4 @@ But to make sure that I'm not lying to you. You can use the amazing site/tool [g
 
 As you can see it has a single `mdat` atom/box, **this is place where the video and audio frames are**. Now load the fragmented mp4 to see which how it spreads the `mdat` boxes.
 
-![](/img/boxes_fragmente_mp4.png)
+![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
