@@ -1,6 +1,9 @@
 clean:
 	@rm -rf ./build/*
 
+fetch_small_bunny_video:
+	./fetch_bbb_video.sh
+
 make_hello: clean
 	docker run -w /files --rm -it  -v `pwd`:/files leandromoreira/ffmpeg-devel \
 	  gcc -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/0_hello_world.c \

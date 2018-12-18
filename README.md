@@ -289,7 +289,7 @@ The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk
 
 ### Requirements
 
-Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment.**
+Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment,** we'll also use the big buck bunny video so if you don't have it locally just run the command `make fetch_small_bunny_video`.
 
 ### Chapter 0 - code walkthrough
 
