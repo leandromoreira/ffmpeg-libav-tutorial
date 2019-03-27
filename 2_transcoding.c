@@ -316,6 +316,27 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
   return 0;
 }
 
+static int select_channel_layout(const AVCodec *codec)
+{
+  const uint64_t *p;
+  uint64_t best_ch_layout = 0;
+  int best_nb_channels = 0;
+  if (!codec->channel_layouts)
+    return AV_CH_LAYOUT_STEREO;
+  p = codec->channel_layouts;
+  while (*p)
+  {
+    int nb_channels = av_get_channel_layout_nb_channels(*p);
+    if (nb_channels > best_nb_channels)
+    {
+      best_ch_layout = *p;
+      best_nb_channels = nb_channels;
+    }
+    p++;
+  }
+  return best_ch_layout;
+}
+
 static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContext *decoder_context) {
   int index = decoder_context->audio_stream_index;
   encoder_context->codec[index] = avcodec_find_encoder(decoder_context->codec_context[index]->codec_id);
@@ -323,7 +344,7 @@ static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContex
   encoder_context->codec_context[index] = avcodec_alloc_context3(encoder_context->codec[index]);
   encoder_context->codec_context[index]->sample_rate = decoder_context->codec_context[index]->sample_rate;
   encoder_context->codec_context[index]->sample_fmt = encoder_context->codec[index]->sample_fmts[0];
-  encoder_context->codec_context[index]->channel_layout = decoder_context->codec_context[index]->channel_layout;
+  encoder_context->codec_context[index]->channel_layout = select_channel_layout(encoder_context->codec[index]);
   encoder_context->codec_context[index]->channels = av_get_channel_layout_nb_channels(encoder_context->codec_context[index]->channel_layout);
 
   encoder_context->stream[index] = avformat_new_stream(encoder_context->format_context, NULL);
