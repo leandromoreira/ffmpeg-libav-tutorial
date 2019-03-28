@@ -338,27 +338,8 @@ static int select_channel_layout(const AVCodec *codec)
 
 static int prepare_audio_copy(TranscodeContext *encoder_context, TranscodeContext *decoder_context) {
   int index = decoder_context->audio_stream_index;
-  encoder_context->codec[index] = avcodec_find_encoder(decoder_context->codec_context[index]->codec_id);
-
-  encoder_context->codec_context[index] = avcodec_alloc_context3(encoder_context->codec[index]);
-  encoder_context->codec_context[index]->sample_rate = decoder_context->codec_context[index]->sample_rate;
-  encoder_context->codec_context[index]->sample_fmt = encoder_context->codec[index]->sample_fmts[0];
-  encoder_context->codec_context[index]->channel_layout = select_channel_layout(encoder_context->codec[index]);
-  encoder_context->codec_context[index]->channels = av_get_channel_layout_nb_channels(encoder_context->codec_context[index]->channel_layout);
-
   encoder_context->stream[index] = avformat_new_stream(encoder_context->format_context, NULL);
-  //encoder_context->time_base = (AVRational){1, encoder_context->sample_rate};
-  encoder_context->stream[index]->time_base = encoder_context->codec_context[index]->time_base;
-
-  if (avcodec_parameters_from_context(encoder_context->stream[index]->codecpar, encoder_context->codec_context[index]) < 0) {
-    logging("failed to copy encoder parameters to output stream");
-    return -1;
-
-  }
-  if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], NULL) < 0) {
-    logging("failed to open codec through avcodec_open2");
-    return -1;
-  }
+  avcodec_parameters_copy(encoder_context->stream[index]->codecpar, decoder_context->stream[index]->codecpar);
 
   return 0;
 }
