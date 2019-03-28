@@ -27,8 +27,6 @@ static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *
 
 int main(int argc, char *argv[])
 {
-  av_register_all();
-
   TranscodeContext *decoder_context = calloc(1, sizeof(TranscodeContext));
   decoder_context->file_name = argv[1];
 
