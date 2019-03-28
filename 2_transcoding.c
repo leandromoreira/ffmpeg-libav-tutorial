@@ -245,9 +245,9 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
     output_packet->stream_index = stream_index;
 
     av_packet_rescale_ts(output_packet,
-        decoder_context->codec_context[stream_index]->time_base,
-        encoder_context->stream[stream_index]->time_base
-        );
+        decoder_context->stream[stream_index]->time_base,
+        encoder_context->stream[stream_index]->time_base);
+
     /* mux encoded frame */
     ret = av_interleaved_write_frame(format_context, output_packet);
 
