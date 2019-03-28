@@ -292,7 +292,6 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
 
   encoder_codec_context->height = decoder_context->codec_context[index]->height;
   encoder_codec_context->width = decoder_context->codec_context[index]->width;
-  encoder_codec_context->time_base = av_inv_q(decoder_context->codec_context[index]->framerate);
   encoder_codec_context->sample_aspect_ratio = decoder_context->codec_context[index]->sample_aspect_ratio;
 
   if (encoder_context->codec[index]->pix_fmts)
