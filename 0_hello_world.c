@@ -105,9 +105,11 @@ int main(int argc, const char *argv[])
 
     // when the stream is a video we store its index, codec parameters and codec
     if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
-      video_stream_index = i;
-      pCodec = pLocalCodec;
-      pCodecParameters = pLocalCodecParameters;
+      if (video_stream_index == -1) {
+        video_stream_index = i;
+        pCodec = pLocalCodec;
+        pCodecParameters = pLocalCodecParameters;
+      }
 
       logging("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
     } else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
