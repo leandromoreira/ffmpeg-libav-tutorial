@@ -49,7 +49,7 @@ Although a muted video can express a variety of feelings, adding sound to it bri
 
 Sound is the vibration that propagates as a wave of pressure, through the air or any other transmission medium, such as a gas, liquid or solid.
 
-> In a digital audio system, a microphone converts sound to an analog electrical signal, then an analog-to-digital converter (ADC)—typically using [pulse-code modulation—converts (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) the analog signal into a digital signal.
+> In a digital audio system, a microphone converts sound to an analog electrical signal, then an analog-to-digital converter (ADC) — typically using [pulse-code modulation (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) - converts the analog signal into a digital signal.
 
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
 >[Source](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
