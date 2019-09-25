@@ -28,6 +28,11 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 
 int main(int argc, const char *argv[])
 {
+  if (argc < 2) {
+    printf("You need to specify a media file.\n");
+    return -1;
+  }
+  
   logging("initializing all the containers, codecs and protocols.");
 
   // AVFormatContext holds the header information from the format (Container)
