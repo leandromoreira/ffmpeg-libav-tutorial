@@ -241,6 +241,9 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
 
     /* prepare packet for muxing */
     output_packet->stream_index = stream_index;
+    // you need to set the package duration otherwise
+    // it might present fps/dts/pts issues (thanks James and Vassilis from mailing list)
+    output_packet->duration = format_context->streams[stream_index]->time_base.den / format_context->streams[stream_index]->time_base.num / decoder_context->stream[stream_index]->avg_frame_rate.num * decoder_context->stream[stream_index]->avg_frame_rate.den;
 
     av_packet_rescale_ts(output_packet,
         decoder_context->stream[stream_index]->time_base,
