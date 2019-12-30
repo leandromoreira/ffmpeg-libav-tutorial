@@ -51,3 +51,12 @@ make_3_0_transmuxing: clean
 
 run_3_0_transmuxing: make_3_0_transmuxing
 	docker run -w /files --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel ./build/3_0_transmuxing /files/small_bunny_1080p_60fps.mp4 /files/bunny_1s_gop.mp4
+
+make_3_1_transmuxing_fmp4: clean
+	docker run -w /files --rm -it  -v `pwd`:/files leandromoreira/ffmpeg-devel \
+	  gcc -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/3_1_transmuxing_fmp4.c \
+	  -lavcodec -lavformat -lavfilter -lavdevice -lswresample -lswscale -lavutil \
+	  -o /files/build/3_1_transmuxing_fmp4
+
+run_3_1_transmuxing_fmp4: make_3_1_transmuxing_fmp4
+	docker run -w /files --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel ./build/3_1_transmuxing_fmp4 /files/small_bunny_1080p_60fps.mp4 /files/bunny_1s_gop.mp4
