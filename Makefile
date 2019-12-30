@@ -42,3 +42,12 @@ make_transcoding_h265: clean
 
 run_transcoding_h265: make_transcoding_h265
 	docker run -w /files --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel ./build/transcoding_h265 /files/small_bunny_1080p_60fps.mp4 /files/bunny_h265.mp4
+
+make_3_0_transmuxing: clean
+	docker run -w /files --rm -it  -v `pwd`:/files leandromoreira/ffmpeg-devel \
+	  gcc -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/3_0_transmuxing.c \
+	  -lavcodec -lavformat -lavfilter -lavdevice -lswresample -lswscale -lavutil \
+	  -o /files/build/3_0_transmuxing
+
+run_3_0_transmuxing: make_3_0_transmuxing
+	docker run -w /files --rm -it -v `pwd`:/files leandromoreira/ffmpeg-devel ./build/3_0_transmuxing /files/small_bunny_1080p_60fps.mp4 /files/bunny_1s_gop.mp4
