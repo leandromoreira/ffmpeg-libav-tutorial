@@ -25,6 +25,43 @@ static int encode_frame(TranscodeContext *decoder_context, TranscodeContext *enc
 static int prepare_decoder(TranscodeContext *decoder_context);
 static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *decoder_context);
 
+// it was create to debug the timming issues
+void print_timming(char *name, AVFormatContext *avf, AVCodecContext *avc, AVStream *avs) {
+  logging("=================================================");
+  logging("%s", name);
+
+  logging("\tAVFormatContext");
+  if (avf != NULL) {
+    logging("\t\tstart_time=%d duration=%d bit_rate=%d start_time_realtime=%d", avf->start_time, avf->duration, avf->bit_rate, avf->start_time_realtime);
+  } else {
+    logging("\t\t->NULL");
+  }
+
+  logging("\tAVCodecContext");
+  if (avc != NULL) {
+    logging("\t\tbit_rate=%d ticks_per_frame=%d width=%d height=%d gop_size=%d keyint_min=%d sample_rate=%d profile=%d level=%d ",
+        avc->bit_rate, avc->ticks_per_frame, avc->width, avc->height, avc->gop_size, avc->keyint_min, avc->sample_rate, avc->profile, avc->level);
+    logging("\t\tavc->time_base=num/den %d/%d", avc->time_base.num, avc->time_base.den);
+    logging("\t\tavc->framerate=num/den %d/%d", avc->framerate.num, avc->framerate.den);
+    logging("\t\tavc->pkt_timebase=num/den %d/%d", avc->pkt_timebase.num, avc->pkt_timebase.den);
+  } else {
+    logging("\t\t->NULL");
+  }
+
+  logging("\tAVStream");
+  if (avs != NULL) {
+    logging("\t\tindex=%d start_time=%d duration=%d ", avs->index, avs->start_time, avs->duration);
+    logging("\t\tavs->time_base=num/den %d/%d", avs->time_base.num, avs->time_base.den);
+    logging("\t\tavs->sample_aspect_ratio=num/den %d/%d", avs->sample_aspect_ratio.num, avs->sample_aspect_ratio.den);
+    logging("\t\tavs->avg_frame_rate=num/den %d/%d", avs->avg_frame_rate.num, avs->avg_frame_rate.den);
+    logging("\t\tavs->r_frame_rate=num/den %d/%d", avs->r_frame_rate.num, avs->r_frame_rate.den);
+  } else {
+    logging("\t\t->NULL");
+  }
+
+  logging("=================================================");
+}
+
 int main(int argc, char *argv[])
 {
   TranscodeContext *decoder_context = calloc(1, sizeof(TranscodeContext));
@@ -145,11 +182,6 @@ static int prepare_decoder(TranscodeContext *decoder_context) {
     decoder_context->codec_parameters[i] = decoder_context->format_context->streams[i]->codecpar;
     decoder_context->stream[i] = decoder_context->format_context->streams[i];
 
-    logging("\tAVStream->time_base before open coded %d/%d", decoder_context->stream[i]->time_base.num, decoder_context->stream[i]->time_base.den);
-    logging("\tAVStream->r_frame_rate before open coded %d/%d", decoder_context->stream[i]->r_frame_rate.num, decoder_context->stream[i]->r_frame_rate.den);
-    logging("\tAVStream->start_time %" PRId64, decoder_context->stream[i]->start_time);
-    logging("\tAVStream->duration %" PRId64, decoder_context->stream[i]->duration);
-
     decoder_context->codec[i] = avcodec_find_decoder(decoder_context->codec_parameters[i]->codec_id);
     if (!decoder_context->codec[i]) {
       logging("ERROR unsupported codec!");
@@ -171,6 +203,7 @@ static int prepare_decoder(TranscodeContext *decoder_context) {
       logging("failed to open codec through avcodec_open2");
       return -1;
     }
+    print_timming("decoder", decoder_context->format_context, decoder_context->codec_context[i], decoder_context->stream[i]);
   }
 
   return 0;
@@ -355,11 +388,15 @@ static int prepare_encoder(TranscodeContext *encoder_context, TranscodeContext *
     logging("error while preparing video encoder");
     return -1;
   }
+  logging("Video");
+  print_timming("encoder", encoder_context->format_context, encoder_context->codec_context[encoder_context->video_stream_index], encoder_context->stream[encoder_context->video_stream_index]);
 
   if (prepare_audio_copy(encoder_context, decoder_context)) {
     logging("error while preparing audio copy");
     return -1;
   }
+  logging("Audio");
+  print_timming("encoder", encoder_context->format_context, encoder_context->codec_context[encoder_context->audio_stream_index], encoder_context->stream[encoder_context->audio_stream_index]);
 
   if (encoder_context->format_context->oformat->flags & AVFMT_GLOBALHEADER)
     encoder_context->format_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
