@@ -330,7 +330,17 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
   else
     encoder_context->codec_context[index]->pix_fmt = decoder_context->codec_context[index]->pix_fmt;
 
-  encoder_context->codec_context[index]->time_base = decoder_context->stream[index]->time_base;
+  encoder_context->codec_context[index]->time_base = decoder_context->stream[index]->avg_frame_rate;
+
+//  encoder_context->codec_context[index]->ticks_per_frame = decoder_context->codec_context[index]->ticks_per_frame;
+//  encoder_context->codec_context[index]->level = decoder_context->codec_context[index]->level;
+//  encoder_context->codec_context[index]->profile = decoder_context->codec_context[index]->profile;
+//
+//  encoder_context->stream[index]->sample_aspect_ratio = decoder_context->stream[index]->sample_aspect_ratio;
+//  encoder_context->stream[index]->time_base = decoder_context->stream[index]->time_base;
+//  encoder_context->stream[index]->duration = decoder_context->stream[index]->duration;
+//  encoder_context->stream[index]->avg_frame_rate = decoder_context->stream[index]->avg_frame_rate;
+//  encoder_context->stream[index]->r_frame_rate = decoder_context->stream[index]->r_frame_rate;
 
   if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], &encoder_options) < 0) {
     logging("could not open the codec");
@@ -342,10 +352,6 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
     return -1;
   }
 
-
-
-
-  encoder_context->stream[index]->time_base = encoder_context->codec_context[index]->time_base;
   return 0;
 }
 

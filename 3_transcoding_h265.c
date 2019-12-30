@@ -297,7 +297,7 @@ static int prepare_video_encoder(TranscodeContext *encoder_context, TranscodeCon
   else
     encoder_context->codec_context[index]->pix_fmt = decoder_context->codec_context[index]->pix_fmt;
 
-  encoder_context->codec_context[index]->time_base = decoder_context->stream[index]->time_base;
+  encoder_context->codec_context[index]->time_base = decoder_context->stream[index]->avg_frame_rate;
 
   if (avcodec_open2(encoder_context->codec_context[index], encoder_context->codec[index], &encoder_options) < 0) {
     logging("could not open the codec");
