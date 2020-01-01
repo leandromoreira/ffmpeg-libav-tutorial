@@ -35,6 +35,9 @@ int main(int argc, const char *argv[])
   
   logging("initializing all the containers, codecs and protocols.");
 
+  av_register_all();
+  avcodec_register_all();
+
   // AVFormatContext holds the header information from the format (Container)
   // Allocating memory for this component
   // http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html
