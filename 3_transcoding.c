@@ -12,6 +12,7 @@
 typedef struct StreamingParams {
   char copy_video;
   char copy_audio;
+  char fragmented_mp4;
 } StreamingParams;
 
 typedef struct StreamingContext {
@@ -160,6 +161,7 @@ int main(int argc, char *argv[])
   StreamingParams sp = {0};
   sp.copy_audio = 1;
   sp.copy_video = 1;
+  sp.fragmented_mp4 = 1;
 
   StreamingContext *decoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
   decoder->filename = argv[1];
@@ -223,9 +225,18 @@ int main(int argc, char *argv[])
       return -1;
     }
   }
+
+  // adding options to the muxer
+  AVDictionary* muxer_opts = NULL;
+
+  if (sp.fragmented_mp4) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE
+    av_dict_set(&muxer_opts, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
+  }
+
   //https://www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga18b7b10bb5b94c4842de18166bc677cb
   // Allocate the stream private data and write the stream header to an output media file.
-  if (avformat_write_header(encoder->avfc, NULL) < 0) {logging("an error occurred when opening output file"); return -1;}
+  if (avformat_write_header(encoder->avfc, &muxer_opts) < 0) {logging("an error occurred when opening output file"); return -1;}
 
   /*
    * Reading the streams packets from the input media file
