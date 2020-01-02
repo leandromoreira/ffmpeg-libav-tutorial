@@ -105,7 +105,10 @@ int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRationa
   if (!sc->video_avcc) {logging("could not allocated memory for codec context"); return -1;}
 
   av_opt_set(sc->video_avcc->priv_data, "preset", "slow", 0);
-  //av_opt_set(sc->video_avcc->priv_data, "x264opts", "keyint=60:min-keyint=60:scenecut=-1", 0);
+  av_opt_set(sc->video_avcc->priv_data, "x264opts", "keyint=60:min-keyint=60:scenecut=-1", 0);
+  //
+  //sc->video_avcc->keyint_min = 60;
+  //sc->video_avcc->gop_size = 60;
 
   sc->video_avcc->height = decoder_ctx->height;
   sc->video_avcc->width = decoder_ctx->width;
