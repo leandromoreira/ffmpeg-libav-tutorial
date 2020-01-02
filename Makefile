@@ -33,7 +33,7 @@ run_remuxing_fragmented_mp4: make_remuxing
 
 make_transcoding: clean
 	docker run -w /files --rm -it  -v `pwd`:/files leandromoreira/ffmpeg-devel \
-	  gcc  -W -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/3_transcoding.c /files/video_debugging.c \
+	  gcc -g -Wall -L/opt/ffmpeg/lib -I/opt/ffmpeg/include/ /files/3_transcoding.c /files/video_debugging.c \
 	  -lavcodec -lavformat -lavfilter -lavdevice -lswresample -lswscale -lavutil \
 	  -o /files/build/3_transcoding
 
