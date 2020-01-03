@@ -89,8 +89,8 @@ int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRationa
     sc->video_avcc->pix_fmt = sc->video_avc->pix_fmts[0];
   else
     sc->video_avcc->pix_fmt = decoder_ctx->pix_fmt;
-  sc->video_avcc->time_base = input_framerate;
-  sc->video_avs->time_base = input_framerate;
+  sc->video_avcc->time_base = av_inv_q(input_framerate);
+  sc->video_avs->time_base = sc->video_avcc->time_base;
 
   if (avcodec_open2(sc->video_avcc, sc->video_avc, NULL) < 0) {logging("could not open the codec"); return -1;}
   avcodec_parameters_from_context(sc->video_avs->codecpar, sc->video_avcc);
