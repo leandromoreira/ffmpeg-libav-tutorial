@@ -13,6 +13,7 @@ typedef struct StreamingParams {
   char copy_video;
   char copy_audio;
   char fragmented_mp4;
+  char *video_codec;
 } StreamingParams;
 
 typedef struct StreamingContext {
@@ -71,17 +72,23 @@ int prepare_decoder(StreamingContext *sc) {
   return 0;
 }
 
-int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRational input_framerate) {
+int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRational input_framerate, StreamingParams sp) {
   sc->video_avs = avformat_new_stream(sc->avfc, NULL);
 
-  sc->video_avc = avcodec_find_encoder_by_name("libx264");
+  char *codec_name = strcmp(sp.video_codec, "x264") == 0 ? "libx264" : "libx265";
+  char *x264_opts = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+  char *x265_opts = "keyint=60:min-keyint=60:scenecut=0";
+  char *codec_priv_key = strcmp(sp.video_codec, "x264") == 0 ? "x264-params" : "x265-params";
+  char *codec_priv_value = strcmp(sp.video_codec, "x264") == 0 ? x264_opts : x265_opts;
+
+  sc->video_avc = avcodec_find_encoder_by_name(codec_name);
   if (!sc->video_avc) {logging("could not find the proper codec"); return -1;}
 
   sc->video_avcc = avcodec_alloc_context3(sc->video_avc);
   if (!sc->video_avcc) {logging("could not allocated memory for codec context"); return -1;}
 
   av_opt_set(sc->video_avcc->priv_data, "preset", "fast", 0);
-  av_opt_set(sc->video_avcc->priv_data, "x264-params", "keyint=60:min-keyint=60:scenecut=-1:force-cfr=1", 0);
+  av_opt_set(sc->video_avcc->priv_data, codec_priv_key, codec_priv_value, 0);
 
   sc->video_avcc->height = decoder_ctx->height;
   sc->video_avcc->width = decoder_ctx->width;
@@ -169,6 +176,7 @@ int main(int argc, char *argv[])
   sp.copy_audio = 1;
   sp.copy_video = 0;
   sp.fragmented_mp4 = 0;
+  sp.video_codec = "x264";
 
   StreamingContext *decoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
   decoder->filename = argv[1];
@@ -184,7 +192,7 @@ int main(int argc, char *argv[])
 
   if (!sp.copy_video) {
     AVRational input_framerate = av_guess_frame_rate(decoder->avfc, decoder->video_avs, NULL);
-    prepare_encoder(encoder, decoder->video_avcc, input_framerate);
+    prepare_encoder(encoder, decoder->video_avcc, input_framerate, sp);
   } else {
     if (prepare_copy(encoder->avfc, &encoder->video_avs, decoder->video_avs->codecpar)) {return -1;}
   }
