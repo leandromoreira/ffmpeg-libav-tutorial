@@ -14,6 +14,7 @@ typedef struct StreamingParams {
   char copy_audio;
   char fragmented_mp4;
   char *video_codec;
+  char *audio_codec;
 } StreamingParams;
 
 typedef struct StreamingContext {
@@ -110,6 +111,37 @@ int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRationa
   return 0;
 }
 
+int prepare_audio_encoder(StreamingContext *sc, int sample_rate, StreamingParams sp){
+  sc->audio_avs = avformat_new_stream(sc->avfc, NULL);
+
+  char *codec = "aac";
+  if (sp.audio_codec)
+    codec = sp.audio_codec;
+
+  sc->audio_avc = avcodec_find_encoder_by_name(codec);
+  if (!sc->audio_avc) {logging("could not find the proper codec"); return -1;}
+
+  sc->audio_avcc = avcodec_alloc_context3(sc->audio_avc);
+  if (!sc->audio_avcc) {logging("could not allocated memory for codec context"); return -1;}
+
+  int OUTPUT_CHANNELS = 2;
+  int OUTPUT_BIT_RATE = 196000;
+  sc->audio_avcc->channels       = OUTPUT_CHANNELS;
+  sc->audio_avcc->channel_layout = av_get_default_channel_layout(OUTPUT_CHANNELS);
+  sc->audio_avcc->sample_rate    = sample_rate;
+  sc->audio_avcc->sample_fmt     = sc->audio_avc->sample_fmts[0];
+  sc->audio_avcc->bit_rate       = OUTPUT_BIT_RATE;
+
+  sc->audio_avcc->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+
+  sc->audio_avs->time_base.den = sample_rate;
+  sc->audio_avs->time_base.num = 1;
+
+  if (avcodec_open2(sc->audio_avcc, sc->audio_avc, NULL) < 0) {logging("could not open the codec"); return -1;}
+  avcodec_parameters_from_context(sc->audio_avs->codecpar, sc->audio_avcc);
+  return 0;
+}
+
 int prepare_copy(AVFormatContext *avfc, AVStream **avs, AVCodecParameters *decoder_par) {
   *avs = avformat_new_stream(avfc, NULL);
   avcodec_parameters_copy((*avs)->codecpar, decoder_par);
@@ -140,12 +172,60 @@ int encode(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_
     output_packet->stream_index = decoder->video_index;
     output_packet->duration = encoder->video_avs->time_base.den / encoder->video_avs->time_base.num / decoder->video_avs->avg_frame_rate.num * decoder->video_avs->avg_frame_rate.den;
 
+
     av_packet_rescale_ts(output_packet, decoder->video_avs->time_base, encoder->video_avs->time_base);
     response = av_interleaved_write_frame(encoder->avfc, output_packet);
     if (response != 0) { logging("Error %d while receiving packet from decoder: %s", response, av_err2str(response)); return -1;}
   }
   av_packet_unref(output_packet);
   av_packet_free(&output_packet);
+  return 0;
+}
+
+int encode_audio(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_frame) {
+  AVPacket *output_packet = av_packet_alloc();
+  if (!output_packet) {logging("could not allocate memory for output packet"); return -1;}
+
+  int response = avcodec_send_frame(encoder->audio_avcc, input_frame);
+
+  while (response >= 0) {
+    response = avcodec_receive_packet(encoder->audio_avcc, output_packet);
+    if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+      break;
+    } else if (response < 0) {
+      logging("Error while receiving packet from encoder: %s", av_err2str(response));
+      return -1;
+    }
+
+    output_packet->stream_index = decoder->audio_index;
+
+    av_packet_rescale_ts(output_packet, decoder->audio_avs->time_base, encoder->audio_avs->time_base);
+    response = av_interleaved_write_frame(encoder->avfc, output_packet);
+    if (response != 0) { logging("Error %d while receiving packet from decoder: %s", response, av_err2str(response)); return -1;}
+  }
+  av_packet_unref(output_packet);
+  av_packet_free(&output_packet);
+  return 0;
+}
+
+int transcode_audio(StreamingContext *decoder, StreamingContext *encoder, AVPacket *input_packet, AVFrame *input_frame) {
+  int response = avcodec_send_packet(decoder->audio_avcc, input_packet);
+  if (response < 0) {logging("Error while sending packet to decoder: %s", av_err2str(response)); return response;}
+
+  while (response >= 0) {
+    response = avcodec_receive_frame(decoder->audio_avcc, input_frame);
+    if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+      break;
+    } else if (response < 0) {
+      logging("Error while receiving frame from decoder: %s", av_err2str(response));
+      return response;
+    }
+
+    if (response >= 0) {
+      if (encode_audio(decoder, encoder, input_frame)) return -1;
+    }
+    av_frame_unref(input_frame);
+  }
   return 0;
 }
 
@@ -177,6 +257,7 @@ int main(int argc, char *argv[])
   sp.copy_video = 0;
   sp.fragmented_mp4 = 0;
   sp.video_codec = "x264";
+  sp.audio_codec = "aac";
 
   StreamingContext *decoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
   decoder->filename = argv[1];
@@ -198,7 +279,7 @@ int main(int argc, char *argv[])
   }
 
   if (!sp.copy_audio) {
-    // transcoding
+    if (prepare_audio_encoder(encoder, decoder->audio_avcc->sample_rate, sp)) {return -1;}
   } else {
     if (prepare_copy(encoder->avfc, &encoder->audio_avs, decoder->audio_avs->codecpar)) {return -1;}
   }
@@ -238,7 +319,8 @@ int main(int argc, char *argv[])
       }
     } else if (decoder->avfc->streams[input_packet->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)  {
       if (!sp.copy_audio) {
-        // TODO
+        transcode_audio(decoder, encoder, input_packet, input_frame);
+        av_packet_unref(input_packet);
       } else {
         if (remux(&input_packet, &encoder->avfc, decoder->audio_avs->time_base, encoder->audio_avs->time_base)) return -1;
       }
