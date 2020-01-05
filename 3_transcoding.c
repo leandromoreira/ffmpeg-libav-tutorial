@@ -249,7 +249,30 @@ int main(int argc, char *argv[])
   if (encode(decoder, encoder, NULL)) return -1;
 
   av_write_trailer(encoder->avfc);
-  // TODO: we should free everything!
+
+  if (muxer_opts != NULL) {
+    av_dict_free(&muxer_opts);
+    muxer_opts = NULL;
+  }
+
+  if (input_frame != NULL) {
+    av_frame_free(&input_frame);
+    input_frame = NULL;
+  }
+
+  if (input_packet != NULL) {
+    av_packet_free(&input_packet);
+    input_packet = NULL;
+  }
+
+  avformat_free_context(decoder->avfc); decoder->avfc = NULL;
+  avformat_free_context(encoder->avfc); encoder->avfc = NULL;
+
+  avcodec_free_context(&decoder->video_avcc); decoder->video_avcc = NULL;
+  avcodec_free_context(&decoder->audio_avcc); decoder->audio_avcc = NULL;
+
+  free(decoder); decoder = NULL;
+  free(encoder); encoder = NULL;
   return 0;
 }
 
