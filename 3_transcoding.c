@@ -347,6 +347,8 @@ int main(int argc, char *argv[])
     input_packet = NULL;
   }
 
+  avformat_close_input(&decoder->avfc);
+
   avformat_free_context(decoder->avfc); decoder->avfc = NULL;
   avformat_free_context(encoder->avfc); encoder->avfc = NULL;
 
