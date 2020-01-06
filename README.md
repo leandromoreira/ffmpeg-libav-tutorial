@@ -783,11 +783,11 @@ The previous section showed a simple transmuxer program, now we're going to add 
 
 After we prepared the decoder but before we arrange the output media file we're going to set up the encoder.
 
-* Create the video `AVStream` in the encoder,
-* Use the `AVCodec` called `libx265`,
-* Create the `AVCodecContext` based in the created codec,
+* Create the video `AVStream` in the encoder, [`avformat_new_stream`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827)
+* Use the `AVCodec` called `libx265`, [`avcodec_find_encoder_by_name`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__encoding.html#gaa614ffc38511c104bdff4a3afa086d37)
+* Create the `AVCodecContext` based in the created codec, [`avcodec_alloc_context3`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#gae80afec6f26df6607eaacf39b561c315)
 * Set up basic attributes for the transcoding session, and
-* Open the codec and copy parameters from the context to the stream.
+* Open the codec and copy parameters from the context to the stream. [`avcodec_open2`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and [`avcodec_parameters_from_context`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga0c7058f764778615e7978a1821ab3cfe)
 
 ```c
 AVRational input_framerate = av_guess_frame_rate(decoder_avfc, decoder_video_avs, NULL);
@@ -822,13 +822,13 @@ avcodec_parameters_from_context(sc->video_avs->codecpar, sc->video_avcc);
 
 We need to expand our decoding loop for the video stream transcoding:
 
-* Send the empty `AVPacket` to the decoder,
-* Receive the uncompressed `AVFrame`,
+* Send the empty `AVPacket` to the decoder, [`avcodec_send_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3)
+* Receive the uncompressed `AVFrame`, [`avcodec_receive_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c)
 * Start to transcode this raw frame,
-* Send the raw frame,
-* Receive the compressed, based on our codec, `AVPacket`,
-* Set up the timestamp, and
-* Write it to the output file.
+* Send the raw frame, [`avcodec_send_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga9395cb802a5febf1f00df31497779169)
+* Receive the compressed, based on our codec, `AVPacket`, [`avcodec_receive_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga5b8eff59cf259747cf0b31563e38ded6)
+* Set up the timestamp, and [`av_packet_rescale_ts`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__packet.html#gae5c86e4d93f6e7aa62ef2c60763ea67e)
+* Write it to the output file. [`av_interleaved_write_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga37352ed2c63493c38219d935e71db6c1)
 
 ```c
 AVFrame *input_frame = av_frame_alloc();
