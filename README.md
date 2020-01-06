@@ -698,3 +698,186 @@ But to make sure that I'm not lying to you. You can use the amazing site/tool [g
 As you can see it has a single `mdat` atom/box, **this is place where the video and audio frames are**. Now load the fragmented mp4 to see which how it spreads the `mdat` boxes.
 
 ![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
+
+## Chapter 3 - transcoding
+
+> #### TLDR; show me the [code](/3_transcoding.c) and execution.
+> ```bash
+> $ make run_transcoding
+> ```
+> We'll skip some details, but don't worry: the [source code is available at github](/3_transcoding.c).
+
+
+
+In this chapter, we're going to create a minimalist transcoder, written in C, that can convert videos coded in H264 to H265 using **FFmpeg/libav** library specifically [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, and libavutil.
+
+![media transcoding flow](/img/transcoding_flow.png.png)
+> _Just a quick recap:_ **AVFormatContext** is the abstraction for the format of the media file, aka container (ex: MKV, MP4, Webm, TS), the **AVStream** represents each type of data for a given format (ex: audio, video, subtitle, metadata), **AVPacket** is a slice of compressed data obtained from the AVStream that can be decoded by an **AVCodec** (ex: av1, h264, vp9, hevc) generating a raw data called **AVFrame**.
+
+### Transmuxing
+
+Let's start with the simple transmuxing operation and then we can build upon this code, the first step is to **load the input file**.
+
+```c
+// Allocate an AVFormatContext
+avfc = avformat_alloc_context();
+// Open an input stream and read the header.
+avformat_open_input(avfc, in_filename, NULL, NULL);
+// Read packets of a media file to get stream information.
+avformat_find_stream_info(avfc, NULL);
+```
+
+Now we're going to set up the decoder, the `AVFormatContext` will give us access to all the `AVStream` components and for each one of them, we can get their `AVCodec` and create the respective `AVCodecContext` and finally we can open the given codec so we can proceed to the decode process.
+`
+>  The **AVCodecContext** holds data about media configuration such as bit rate, frame rate, sample rate, channels, height, and many others.
+
+```c
+for (int i = 0; i < avfc->nb_streams; i++)
+{
+  AVStream *avs = avfc->streams[i];
+  AVCodec *avc = avcodec_find_decoder(avs->codecpar->codec_id);
+  AVCodecContext *avcc = avcodec_alloc_context3(*avc);
+  avcodec_parameters_to_context(*avcc, avs->codecpar);
+  avcodec_open2(*avcc, *avc, NULL);
+}
+```
+
+We need to prepare the output media file for transmuxing as well, we first **allocate memory** for the output `AVFormatContext`. We create **each stream** in the output format. In order to pack the stream properly, we **copy the codec parameters** from the decoder.
+
+We **set the flag** `AV_CODEC_FLAG_GLOBAL_HEADER` which tells the encoder that it can use the global headers and finally we open the output **file for write** and persist the headers.
+
+```c
+avformat_alloc_output_context2(&encoder_avfc, NULL, NULL, out_filename);
+
+AVStream *avs = avformat_new_stream(encoder_avfc, NULL);
+avcodec_parameters_copy(avs->codecpar, decoder_avs->codecpar);
+
+if (encoder_avfc->oformat->flags & AVFMT_GLOBALHEADER)
+  encoder_avfc->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+avio_open(&encoder_avfc->pb, encoder->filename, AVIO_FLAG_WRITE);
+avformat_write_header(encoder->avfc, &muxer_opts);
+
+```
+
+We're getting the `AVPacket`'s from the decoder, adjusting the timestamps, and write the packet properly to the output file. Even though the function `av_interleaved_write_frame` says "write frame" we are storing the packet. We finish the transmuxing process by writing the stream trailer to the file.
+
+```c
+AVFrame *input_frame = av_frame_alloc();
+AVPacket *input_packet = av_packet_alloc();
+
+while (av_read_frame(decoder_avfc, input_packet) >= 0)
+{
+  av_packet_rescale_ts(input_packet, decoder_video_avs->time_base, encoder_video_avs->time_base);
+  av_interleaved_write_frame(*avfc, input_packet) < 0);
+}
+
+av_write_trailer(encoder_avfc);
+```
+
+### Transcoding
+
+The previous section showed a simple transmuxer program, now we're going to add the capability to encode files, specifically we're going to enable it to transcode videos from `h264` to `h265`.
+
+After we prepared the decoder but before we prepare the output media file we're going to set up the encoder.
+
+* Create the video `AVStream` in the encoder,
+* Use the `AVCodec` called `libx265`,
+* Create the `AVCodecContext` based in the created codec,
+* Set up basic attributes for the transcoding session, and
+* Open the codec and copy parameters from the context to the stream.
+
+```c
+AVRational input_framerate = av_guess_frame_rate(decoder_avfc, decoder_video_avs, NULL);
+AVStream *video_avs = avformat_new_stream(encoder_avfc, NULL);
+
+char *codec_name = "libx265";
+char *codec_priv_key = "x265-params";
+// we're going to use internal options for the x265
+// it disables the scene change detection and fix then
+// GOP on 60 frames.
+char *codec_priv_value = "keyint=60:min-keyint=60:scenecut=0";
+
+AVCodec *video_avc = avcodec_find_encoder_by_name(codec_name);
+AVCodecContext *video_avcc = avcodec_alloc_context3(video_avc);
+// encoder codec params
+av_opt_set(sc->video_avcc->priv_data, codec_priv_key, codec_priv_value, 0);
+video_avcc->height = decoder_ctx->height;
+video_avcc->width = decoder_ctx->width;
+video_avcc->pix_fmt = video_avc->pix_fmts[0];
+// control rate
+video_avcc->bit_rate = 2 * 1000 * 1000;
+video_avcc->rc_buffer_size = 4 * 1000 * 1000;
+video_avcc->rc_max_rate = 2 * 1000 * 1000;
+video_avcc->rc_min_rate = 2.5 * 1000 * 1000;
+// time base
+video_avcc->time_base = av_inv_q(input_framerate);
+video_avs->time_base = sc->video_avcc->time_base;
+
+avcodec_open2(sc->video_avcc, sc->video_avc, NULL);
+avcodec_parameters_from_context(sc->video_avs->codecpar, sc->video_avcc);
+```
+
+We need to expand our decoding loop for the video stream transcoding:
+
+* Send the empty `AVPacket` to the decoder,
+* Receive the uncompressed `AVFrame`,
+* Start to transcode this raw frame,
+* Send the raw frame,
+* Receive the compressed, based on our codec, `AVPacket`,
+* Set up the timestamp, and
+* Write it to the output file.
+
+```c
+AVFrame *input_frame = av_frame_alloc();
+AVPacket *input_packet = av_packet_alloc();
+
+while (av_read_frame(decoder_avfc, input_packet) >= 0)
+{
+  int response = avcodec_send_packet(decoder_video_avcc, input_packet);
+  while (response >= 0) {
+    response = avcodec_receive_frame(decoder_video_avcc, input_frame);
+    if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+      break;
+    } else if (response < 0) {
+      return response;
+    }
+    if (response >= 0) {
+      encode(encoder_avfc, decoder_video_avs, encoder_video_avs, decoder_video_avcc, input_packet->stream_index);
+    }
+    av_frame_unref(input_frame);
+  }
+  av_packet_unref(input_packet);
+}
+av_write_trailer(encoder_avfc);
+
+// used function
+int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_avs, AVCodecContext video_avcc int index) {
+  AVPacket *output_packet = av_packet_alloc();
+  int response = avcodec_send_frame(video_avcc, input_frame);
+
+  while (response >= 0) {
+    response = avcodec_receive_packet(video_avcc, output_packet);
+    if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+      break;
+    } else if (response < 0) {
+      return -1;
+    }
+
+    output_packet->stream_index = index;
+    output_packet->duration = enc_video_avs->time_base.den / enc_video_avs->time_base.num / dec_video_avs->avg_frame_rate.num * dec_video_avs->avg_frame_rate.den;
+
+    av_packet_rescale_ts(output_packet, dec_video_avs->time_base, enc_video_avs->time_base);
+    response = av_interleaved_write_frame(avfc, output_packet);
+  }
+  av_packet_unref(output_packet);
+  av_packet_free(&output_packet);
+  return 0;
+}
+
+```
+
+We converted the media stream from `h264` codec:
+![h264 codec properties](/img/h264_properties.png)
+To the `HEVC` codec:
+![hevc codec properties](/img/hevc_properties.png)
