@@ -714,7 +714,7 @@ In this chapter, we're going to create a minimalist transcoder, written in C, th
 
 ![media transcoding flow](/img/transcoding_flow.png)
 
-> _Just a quick recap:_ **AVFormatContext** is the abstraction for the format of the media file, aka container (ex: MKV, MP4, Webm, TS), the **AVStream** represents each type of data for a given format (ex: audio, video, subtitle, metadata), **AVPacket** is a slice of compressed data obtained from the AVStream that can be decoded by an **AVCodec** (ex: av1, h264, vp9, hevc) generating a raw data called **AVFrame**.
+> _Just a quick recap:_ The [**AVFormatContext**](https://www.ffmpeg.org/doxygen/trunk/structAVFormatContext.html) is the abstraction for the format of the media file, aka container (ex: MKV, MP4, Webm, TS). The [**AVStream**](https://www.ffmpeg.org/doxygen/trunk/structAVStream.html) represents each type of data for a given format (ex: audio, video, subtitle, metadata). The [**AVPacket**](https://www.ffmpeg.org/doxygen/trunk/structAVPacket.html) is a slice of compressed data obtained from the `AVStream` that can be decoded by an [**AVCodec**](https://www.ffmpeg.org/doxygen/trunk/structAVCodec.html) (ex: av1, h264, vp9, hevc) generating a raw data called [**AVFrame**](https://www.ffmpeg.org/doxygen/trunk/structAVFrame.html).
 
 ### Transmuxing
 
@@ -729,9 +729,9 @@ avformat_open_input(avfc, in_filename, NULL, NULL);
 avformat_find_stream_info(avfc, NULL);
 ```
 
-Now we're going to set up the decoder, the `AVFormatContext` will give us access to all the `AVStream` components and for each one of them, we can get their `AVCodec` and create the respective `AVCodecContext` and finally we can open the given codec so we can proceed to the decode process.
-`
->  The **AVCodecContext** holds data about media configuration such as bit rate, frame rate, sample rate, channels, height, and many others.
+Now we're going to set up the decoder, the `AVFormatContext` will give us access to all the `AVStream` components and for each one of them, we can get their `AVCodec` and create the particular `AVCodecContext` and finally we can open the given codec so we can proceed to the decoding process.
+
+>  The [**AVCodecContext**](https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html) holds data about media configuration such as bit rate, frame rate, sample rate, channels, height, and many others.
 
 ```c
 for (int i = 0; i < avfc->nb_streams; i++)
@@ -781,7 +781,7 @@ av_write_trailer(encoder_avfc);
 
 The previous section showed a simple transmuxer program, now we're going to add the capability to encode files, specifically we're going to enable it to transcode videos from `h264` to `h265`.
 
-After we prepared the decoder but before we prepare the output media file we're going to set up the encoder.
+After we prepared the decoder but before we arrange the output media file we're going to set up the encoder.
 
 * Create the video `AVStream` in the encoder,
 * Use the `AVCodec` called `libx265`,
@@ -879,11 +879,6 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
 
 ```
 
-We converted the media stream from `h264` codec:
+We converted the media stream from `h264` to `h265`, as expected the `h265` version of the media file is smaller than the `h264`.
 
-![h264 codec properties](/img/h264_properties.png)
-
-To the `HEVC` codec:
-
-![hevc codec properties](/img/hevc_properties.png)
-
+> Now, to be honest, this was [harder than I thought](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54) it'd be and I had to dig into the [FFmpeg command line source code](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54#issuecomment-570746749) and test it a lot and I think I'm missing something because I had to enforce `force-cfr` for the `h264` to work and I'm still seeing some warning messages like `warning messages (forced frame type (5) at 80 was changed to frame type (3))`.
