@@ -712,7 +712,7 @@ As you can see it has a single `mdat` atom/box, **this is place where the video 
 
 In this chapter, we're going to create a minimalist transcoder, written in C, that can convert videos coded in H264 to H265 using **FFmpeg/libav** library specifically [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, and libavutil.
 
-![media transcoding flow](/img/transcoding_flow.png.png)
+![media transcoding flow](/img/transcoding_flow.png)
 
 > _Just a quick recap:_ **AVFormatContext** is the abstraction for the format of the media file, aka container (ex: MKV, MP4, Webm, TS), the **AVStream** represents each type of data for a given format (ex: audio, video, subtitle, metadata), **AVPacket** is a slice of compressed data obtained from the AVStream that can be decoded by an **AVCodec** (ex: av1, h264, vp9, hevc) generating a raw data called **AVFrame**.
 
