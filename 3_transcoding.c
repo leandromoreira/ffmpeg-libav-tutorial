@@ -73,7 +73,7 @@ int prepare_decoder(StreamingContext *sc) {
   return 0;
 }
 
-int prepare_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRational input_framerate, StreamingParams sp) {
+int prepare_video_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRational input_framerate, StreamingParams sp) {
   sc->video_avs = avformat_new_stream(sc->avfc, NULL);
 
   char *codec_name = strcmp(sp.video_codec, "x264") == 0 ? "libx264" : "libx265";
@@ -154,7 +154,7 @@ int remux(AVPacket **pkt, AVFormatContext **avfc, AVRational decoder_tb, AVRatio
   return 0;
 }
 
-int encode(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_frame) {
+int encode_video(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_frame) {
   AVPacket *output_packet = av_packet_alloc();
   if (!output_packet) {logging("could not allocate memory for output packet"); return -1;}
 
@@ -171,7 +171,6 @@ int encode(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_
 
     output_packet->stream_index = decoder->video_index;
     output_packet->duration = encoder->video_avs->time_base.den / encoder->video_avs->time_base.num / decoder->video_avs->avg_frame_rate.num * decoder->video_avs->avg_frame_rate.den;
-
 
     av_packet_rescale_ts(output_packet, decoder->video_avs->time_base, encoder->video_avs->time_base);
     response = av_interleaved_write_frame(encoder->avfc, output_packet);
@@ -229,7 +228,7 @@ int transcode_audio(StreamingContext *decoder, StreamingContext *encoder, AVPack
   return 0;
 }
 
-int transcode(StreamingContext *decoder, StreamingContext *encoder, AVPacket *input_packet, AVFrame *input_frame) {
+int transcode_video(StreamingContext *decoder, StreamingContext *encoder, AVPacket *input_packet, AVFrame *input_frame) {
   int response = avcodec_send_packet(decoder->video_avcc, input_packet);
   if (response < 0) {logging("Error while sending packet to decoder: %s", av_err2str(response)); return response;}
 
@@ -243,7 +242,7 @@ int transcode(StreamingContext *decoder, StreamingContext *encoder, AVPacket *in
     }
 
     if (response >= 0) {
-      if (encode(decoder, encoder, input_frame)) return -1;
+      if (encode_video(decoder, encoder, input_frame)) return -1;
     }
     av_frame_unref(input_frame);
   }
@@ -273,7 +272,7 @@ int main(int argc, char *argv[])
 
   if (!sp.copy_video) {
     AVRational input_framerate = av_guess_frame_rate(decoder->avfc, decoder->video_avs, NULL);
-    prepare_encoder(encoder, decoder->video_avcc, input_framerate, sp);
+    prepare_video_encoder(encoder, decoder->video_avcc, input_framerate, sp);
   } else {
     if (prepare_copy(encoder->avfc, &encoder->video_avs, decoder->video_avs->codecpar)) {return -1;}
   }
@@ -312,14 +311,15 @@ int main(int argc, char *argv[])
   {
     if (decoder->avfc->streams[input_packet->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
       if (!sp.copy_video) {
-        if (transcode(decoder, encoder, input_packet, input_frame)) return -1;
+        // TODO: refactor to be generic for audio and video (receiving a function pointer to the differences)
+        if (transcode_video(decoder, encoder, input_packet, input_frame)) return -1;
         av_packet_unref(input_packet);
       } else {
         if (remux(&input_packet, &encoder->avfc, decoder->video_avs->time_base, encoder->video_avs->time_base)) return -1;
       }
     } else if (decoder->avfc->streams[input_packet->stream_index]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)  {
       if (!sp.copy_audio) {
-        transcode_audio(decoder, encoder, input_packet, input_frame);
+        if (transcode_audio(decoder, encoder, input_packet, input_frame)) return -1;
         av_packet_unref(input_packet);
       } else {
         if (remux(&input_packet, &encoder->avfc, decoder->audio_avs->time_base, encoder->audio_avs->time_base)) return -1;
@@ -328,7 +328,8 @@ int main(int argc, char *argv[])
       logging("ignoring all non video or audio packets");
     }
   }
-  if (encode(decoder, encoder, NULL)) return -1;
+  // TODO: should I also flush the audio encoder?
+  if (encode_video(decoder, encoder, NULL)) return -1;
 
   av_write_trailer(encoder->avfc);
 
