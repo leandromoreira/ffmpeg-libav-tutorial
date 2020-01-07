@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
   sp.copy_audio = 1;
   sp.copy_video = 0;
   sp.fragmented_mp4 = 0;
-  sp.video_codec = "x264";
+  sp.video_codec = "x265";
   sp.audio_codec = "aac";
 
   StreamingContext *decoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
