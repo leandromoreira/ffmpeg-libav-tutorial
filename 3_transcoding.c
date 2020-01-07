@@ -12,9 +12,13 @@
 typedef struct StreamingParams {
   char copy_video;
   char copy_audio;
-  char fragmented_mp4;
+  char *output_extension;
+  char *muxer_opt_key;
+  char *muxer_opt_value;
   char *video_codec;
   char *audio_codec;
+  char *codec_priv_key;
+  char *codec_priv_value;
 } StreamingParams;
 
 typedef struct StreamingContext {
@@ -76,20 +80,15 @@ int prepare_decoder(StreamingContext *sc) {
 int prepare_video_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVRational input_framerate, StreamingParams sp) {
   sc->video_avs = avformat_new_stream(sc->avfc, NULL);
 
-  char *codec_name = strcmp(sp.video_codec, "x264") == 0 ? "libx264" : "libx265";
-  char *x264_opts = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
-  char *x265_opts = "keyint=60:min-keyint=60:scenecut=0";
-  char *codec_priv_key = strcmp(sp.video_codec, "x264") == 0 ? "x264-params" : "x265-params";
-  char *codec_priv_value = strcmp(sp.video_codec, "x264") == 0 ? x264_opts : x265_opts;
-
-  sc->video_avc = avcodec_find_encoder_by_name(codec_name);
+  sc->video_avc = avcodec_find_encoder_by_name(sp.video_codec);
   if (!sc->video_avc) {logging("could not find the proper codec"); return -1;}
 
   sc->video_avcc = avcodec_alloc_context3(sc->video_avc);
   if (!sc->video_avcc) {logging("could not allocated memory for codec context"); return -1;}
 
   av_opt_set(sc->video_avcc->priv_data, "preset", "fast", 0);
-  av_opt_set(sc->video_avcc->priv_data, codec_priv_key, codec_priv_value, 0);
+  if (sp.codec_priv_key && sp.codec_priv_value)
+    av_opt_set(sc->video_avcc->priv_data, sp.codec_priv_key, sp.codec_priv_value, 0);
 
   sc->video_avcc->height = decoder_ctx->height;
   sc->video_avcc->width = decoder_ctx->width;
@@ -114,11 +113,7 @@ int prepare_video_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVR
 int prepare_audio_encoder(StreamingContext *sc, int sample_rate, StreamingParams sp){
   sc->audio_avs = avformat_new_stream(sc->avfc, NULL);
 
-  char *codec = "aac";
-  if (sp.audio_codec)
-    codec = sp.audio_codec;
-
-  sc->audio_avc = avcodec_find_encoder_by_name(codec);
+  sc->audio_avc = avcodec_find_encoder_by_name(sp.audio_codec);
   if (!sc->audio_avc) {logging("could not find the proper codec"); return -1;}
 
   sc->audio_avcc = avcodec_alloc_context3(sc->audio_avc);
@@ -251,18 +246,78 @@ int transcode_video(StreamingContext *decoder, StreamingContext *encoder, AVPack
 
 int main(int argc, char *argv[])
 {
+  /*
+   * H264 -> H265
+   * Audio -> remuxed (untouched)
+   * MP4 - MP4
+   */
   StreamingParams sp = {0};
   sp.copy_audio = 1;
   sp.copy_video = 0;
-  sp.fragmented_mp4 = 0;
-  sp.video_codec = "x265";
-  sp.audio_codec = "aac";
+  sp.video_codec = "libx265";
+  sp.codec_priv_key = "x265-params";
+  sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> remuxed (untouched)
+   * MP4 - MP4
+   */
+  //StreamingParams sp = {0};
+  //sp.copy_audio = 1;
+  //sp.copy_video = 0;
+  //sp.video_codec = "libx264";
+  //sp.codec_priv_key = "x264-params";
+  //sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> remuxed (untouched)
+   * MP4 - fragmented MP4
+   */
+  //StreamingParams sp = {0};
+  //sp.copy_audio = 1;
+  //sp.copy_video = 0;
+  //sp.video_codec = "libx264";
+  //sp.codec_priv_key = "x264-params";
+  //sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+  //sp.muxer_opt_key = "movflags";
+  //sp.muxer_opt_value = "frag_keyframe+empty_moov+default_base_moof";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> AAC
+   * MP4 - MPEG-TS
+   */
+  //StreamingParams sp = {0};
+  //sp.copy_audio = 0;
+  //sp.copy_video = 0;
+  //sp.video_codec = "libx264";
+  //sp.codec_priv_key = "x264-params";
+  //sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+  //sp.audio_codec = "aac";
+  //sp.output_extension = ".ts";
+
+  /*
+   * H264 -> VP9
+   * Audio -> Vorbis
+   * MP4 - WebM
+   */
+  //StreamingParams sp = {0};
+  //sp.copy_audio = 0;
+  //sp.copy_video = 0;
+  //sp.video_codec = "libvpx-vp9";
+  //sp.audio_codec = "libvorbis";
+  //sp.output_extension = ".webm";
 
   StreamingContext *decoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
   decoder->filename = argv[1];
 
   StreamingContext *encoder = (StreamingContext*) calloc(1, sizeof(StreamingContext));
   encoder->filename = argv[2];
+
+  if (sp.output_extension)
+    strcat(encoder->filename, sp.output_extension);
 
   if (open_media(decoder->filename, &decoder->avfc)) return -1;
   if (prepare_decoder(decoder)) return -1;
@@ -295,8 +350,8 @@ int main(int argc, char *argv[])
 
   AVDictionary* muxer_opts = NULL;
 
-  if (sp.fragmented_mp4) {
-    av_dict_set(&muxer_opts, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
+  if (sp.muxer_opt_key && sp.muxer_opt_value) {
+    av_dict_set(&muxer_opts, sp.muxer_opt_key, sp.muxer_opt_value, 0);
   }
 
   if (avformat_write_header(encoder->avfc, &muxer_opts) < 0) {logging("an error occurred when opening output file"); return -1;}
