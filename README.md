@@ -879,6 +879,74 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
 
 ```
 
-We converted the media stream from `h264` to `h265`, as expected the `h265` version of the media file is smaller than the `h264`.
+We converted the media stream from `h264` to `h265`, as expected the `h265` version of the media file is smaller than the `h264` however the [created program](/3_transcoding.c) is capable of:
+
+```c
+
+  /*
+   * H264 -> H265
+   * Audio -> remuxed (untouched)
+   * MP4 - MP4
+   */
+  StreamingParams sp = {0};
+  sp.copy_audio = 1;
+  sp.copy_video = 0;
+  sp.video_codec = "libx265";
+  sp.codec_priv_key = "x265-params";
+  sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> remuxed (untouched)
+   * MP4 - MP4
+   */
+  StreamingParams sp = {0};
+  sp.copy_audio = 1;
+  sp.copy_video = 0;
+  sp.video_codec = "libx264";
+  sp.codec_priv_key = "x264-params";
+  sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> remuxed (untouched)
+   * MP4 - fragmented MP4
+   */
+  StreamingParams sp = {0};
+  sp.copy_audio = 1;
+  sp.copy_video = 0;
+  sp.video_codec = "libx264";
+  sp.codec_priv_key = "x264-params";
+  sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+  sp.muxer_opt_key = "movflags";
+  sp.muxer_opt_value = "frag_keyframe+empty_moov+default_base_moof";
+
+  /*
+   * H264 -> H264 (fixed gop)
+   * Audio -> AAC
+   * MP4 - MPEG-TS
+   */
+  StreamingParams sp = {0};
+  sp.copy_audio = 0;
+  sp.copy_video = 0;
+  sp.video_codec = "libx264";
+  sp.codec_priv_key = "x264-params";
+  sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+  sp.audio_codec = "aac";
+  sp.output_extension = ".ts";
+
+  /* WIP :P  -> it's not playing on VLC, the final bit rate is huge
+   * H264 -> VP9
+   * Audio -> Vorbis
+   * MP4 - WebM
+   */
+  //StreamingParams sp = {0};
+  //sp.copy_audio = 0;
+  //sp.copy_video = 0;
+  //sp.video_codec = "libvpx-vp9";
+  //sp.audio_codec = "libvorbis";
+  //sp.output_extension = ".webm";
+
+```
 
 > Now, to be honest, this was [harder than I thought](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54) it'd be and I had to dig into the [FFmpeg command line source code](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54#issuecomment-570746749) and test it a lot and I think I'm missing something because I had to enforce `force-cfr` for the `h264` to work and I'm still seeing some warning messages like `warning messages (forced frame type (5) at 80 was changed to frame type (3))`.
