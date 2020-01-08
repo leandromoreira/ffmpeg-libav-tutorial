@@ -126,11 +126,11 @@ int prepare_audio_encoder(StreamingContext *sc, int sample_rate, StreamingParams
   sc->audio_avcc->sample_rate    = sample_rate;
   sc->audio_avcc->sample_fmt     = sc->audio_avc->sample_fmts[0];
   sc->audio_avcc->bit_rate       = OUTPUT_BIT_RATE;
+  sc->audio_avcc->time_base      = (AVRational){1, sample_rate};
 
   sc->audio_avcc->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
 
-  sc->audio_avs->time_base.den = sample_rate;
-  sc->audio_avs->time_base.num = 1;
+  sc->audio_avs->time_base = sc->audio_avcc->time_base;
 
   if (avcodec_open2(sc->audio_avcc, sc->audio_avc, NULL) < 0) {logging("could not open the codec"); return -1;}
   avcodec_parameters_from_context(sc->audio_avs->codecpar, sc->audio_avcc);
@@ -150,6 +150,8 @@ int remux(AVPacket **pkt, AVFormatContext **avfc, AVRational decoder_tb, AVRatio
 }
 
 int encode_video(StreamingContext *decoder, StreamingContext *encoder, AVFrame *input_frame) {
+  if (input_frame) input_frame->pict_type = AV_PICTURE_TYPE_NONE;
+
   AVPacket *output_packet = av_packet_alloc();
   if (!output_packet) {logging("could not allocate memory for output packet"); return -1;}
 
