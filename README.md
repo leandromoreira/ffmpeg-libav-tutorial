@@ -771,7 +771,7 @@ AVPacket *input_packet = av_packet_alloc();
 while (av_read_frame(decoder_avfc, input_packet) >= 0)
 {
   av_packet_rescale_ts(input_packet, decoder_video_avs->time_base, encoder_video_avs->time_base);
-  av_interleaved_write_frame(*avfc, input_packet) < 0);
+  av_interleaved_write_frame(*avfc, input_packet) < 0));
 }
 
 av_write_trailer(encoder_avfc);
