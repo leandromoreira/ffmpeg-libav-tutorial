@@ -92,6 +92,7 @@ int prepare_video_encoder(StreamingContext *sc, AVCodecContext *decoder_ctx, AVR
 
   sc->video_avcc->height = decoder_ctx->height;
   sc->video_avcc->width = decoder_ctx->width;
+  sc->video_avcc->sample_aspect_ratio = decoder_ctx->sample_aspect_ratio;
   if (sc->video_avc->pix_fmts)
     sc->video_avcc->pix_fmt = sc->video_avc->pix_fmts[0];
   else
