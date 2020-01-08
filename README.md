@@ -177,7 +177,7 @@ bunny_1080p_60fps.webm
 
 **What?** the act of changing the bit rate, or producing other renditions.
 
-**Why?** people will try to watch your video in a `2G` (edge) connection using a less powerful smartphone or in a `fiber` Internet connection on their 4K TVs therefore you should offer more than on rendition of the same video with different bit rate.
+**Why?** people will try to watch your video in a `2G` (edge) connection using a less powerful smartphone or in a `fiber` Internet connection on their 4K TVs therefore you should offer more than one rendition of the same video with different bit rate.
 
 **How?** producing a rendition with bit rate between 3856K and 2000K.
 ```bash
