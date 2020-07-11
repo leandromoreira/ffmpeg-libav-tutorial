@@ -1,39 +1,41 @@
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
-我在找一个教程/书来教我如何使用 [FFmpeg](https://www.ffmpeg.org/) 作为 lib 来使用，然后我找到了一个 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
+# 介绍
 
-不幸运的是这个项目已经不维护了，所以我才决定写着个教程。
+我在找一个教程/书来教我如何使用 [FFmpeg](https://www.ffmpeg.org/) 的 lib 库，然后我找到了一个 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
 
-这里大部分的代码都是c写的，**但是不用担心**：你可以非常容易的理解并将它作为你的首选语言。
+不巧的是这个项目已经不维护了，所以我才决定写这个教程。
 
-FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav)，即时你对这些语言不熟。比仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
+这里大部分的代码都是 c 写的，**但是不用担心**：你可以非常容易的理解它。
 
-我将快速的教会大家认识什么是视频、音频、编解码和容器，然后我们将会去使用FFmpeg命令行，并且最终用代码实现。随时可以跳过这个部分 [艰难的学习FFmpeg](#learn-ffmpeg-libav-the-hard-way)。
+FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav)，即时你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
+
+我将会快速的教会大家认识什么是视频、音频、编解码和容器，然后我们尝试使用FFmpeg命令行，最终用代码实现这些功能。当然你可以随时跳过这个部分 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
 
 很多人都说相比较传统的TV，视频是互联网的未来，所以FFmpeg是值得学习的。
 
 __目录__
 
-* [介绍](#intro)
-  * [视频 - 你可以看见什么!](#video---what-you-see)
-  * [音频 - 你可以听见什么!](#audio---what-you-listen)
-  * [编码 - 压缩数据](#codec---shrinking-data)
-  * [容器 - 整合音频和视频的地方](#container---a-comfy-place-for-audio-and-video)
-* [FFmpeg - 命令行](#ffmpeg---command-line)
-  * [FFmpeg 命令行工具 101](#ffmpeg-command-line-tool-101)
-* [通用的视频操作](#common-video-operations)
-  * [转码](#transcoding)
-  * [转封装](#transmuxing)
-  * [转码率](#trvansrating)
-  * [转分辨率](#transsizing)
-  * [自适应流](#bonus-round-adaptive-streaming)
-  * [超越](#going-beyond)
-* [艰难的学习 FFmpeg](#learn-ffmpeg-libav-the-hard-way)
-  * [章节 0 - 著名的hello world](#chapter-0---the-infamous-hello-world)
-    * [FFmpeg libav 架构](#ffmpeg-libav-architecture)
-  * [章节1 - 时间线](#chapter-1---syncing-audio-and-video)
-  * [章节 2 - 重新封装](#chapter-2---remuxing)
-  * [章节 3 - 转码](#chapter-3---transcoding)
+* [介绍](#介绍)
+  * [视频 - 你可以看见什么!](#视频---你可以看见什么)
+  * [音频 - 你可以听见什么!](#音频---你可以听见什么)
+  * [编码 - 压缩数据](#编码---压缩数据)
+  * [容器 - 整合音频和视频的地方](#容器---整合音视频的地方)
+* [FFmpeg - 命令行](#FFmpeg---命令行)
+  * [FFmpeg 命令行工具 101](#FFmpeg-命令行工具-101)
+* [通用的视频操作](#通用的视频操作)
+  * [转码](#转码)
+  * [转封装](#转封装)
+  * [转码率](#转码率)
+  * [转分辨率](#转分辨率)
+  * [自适应流](#自适应流)
+  * [超越](#超越)
+* [艰难的学习 FFmpeg](#艰难的学习-FFmpeg)
+  * [章节0 - 著名的hello world](#章节0---著名的hello-world)
+    * [FFmpeg libav 架构](#FFmpeg-libav-架构)
+  * [章节1 - 同步音频和视频](#章节1---同步音频和视频)
+  * [章节2 - 重新封装](#章节2---重新封装)
+  * [章节3 - 转码](#章节3---转码)
 
 # 介绍
 
@@ -258,7 +260,7 @@ PS: 我拿了一个例子 [播放自适应 WebM 的说明](http://wiki.webmproje
 
 我使用 FFmpeg 结合 iMovie 为 YouTube 编辑视频，其实你也可以更专业的用它。
 
-# 学习FFmpeg的困难
+# 艰难的学习 FFmpeg
 
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
@@ -269,7 +271,7 @@ FFmpeg 有几个[lib库](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org
 
 > 这个标题是对 Zed Shaw 的一系列丛书[学习X的困难](https://learncodethehardway.org/)，特别是学习C语言困难。
 
-## 章节 - 大名鼎鼎的 hello world
+## 章节 - 著名的 hello world
 
 这里说的 hello world 实际上不会在终端里输出 “hello world” :tongue:
 
