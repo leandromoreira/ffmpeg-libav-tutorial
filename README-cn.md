@@ -2,17 +2,17 @@
 
 # 介绍
 
-我在找一个教程/书来教我如何使用 [FFmpeg](https://www.ffmpeg.org/) 的 lib 库，然后我找到了一个 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
+我在找 [FFmpeg](https://www.ffmpeg.org/) 的 lib 使用的教程，后来我找到了一个 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
 
-不巧的是这个项目已经不维护了，所以我才决定写这个教程。
+但不巧的是这个项目已经不维护了，所以我才决定写这个教程。
 
 这里大部分的代码都是 c 写的，**但是不用担心**：你可以非常容易的理解它。
 
-FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav)，即时你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
+FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，即使你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
 
-我将会快速的教会大家认识什么是视频、音频、编解码和容器，然后我们尝试使用FFmpeg命令行，最终用代码实现这些功能。当然你可以随时跳过这个部分 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
+我将会快速的教会大家认识什么是视频、音频、编解码和容器，然后我们尝试使用 FFmpeg 命令行，最终用代码实现一些功能。当然你可以随时跳过这个部分 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
 
-很多人都说相比较传统的TV，视频是互联网的未来，所以FFmpeg是值得学习的。
+很多人都说对于传统的TV来说，视频才是互联网的未来，所以FFmpeg是值得学习的一个工具。
 
 __目录__
 
@@ -275,7 +275,7 @@ FFmpeg 有几个[lib库](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org
 
 这里说的 hello world 实际上不会在终端里输出 “hello world” :tongue:
 
-而是**输出视频信息**，信息包括：时长、分辨率、音频轨道。最后我们将**解码一些帧，并且保存为图片**
+而是**输出视频信息**，信息包括：时长、分辨率、音频轨道。最后我们将**解码一些帧，并且保存为图片**。
 
 
 ### FFmpeg libav 架构
@@ -504,7 +504,7 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 - tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
 - tbn = [`AVStream->time_base`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a9db755451f14e2bf590d4b85d82b32e6)
 
-出于好奇，这些帧我们的编码顺序 DTS 是（帧：1,6,4,2,3,5），但是我们的播放顺序是（帧：1,2,3,4,5）。同时我们可以看到B帧相对于P帧和I帧是比较节约空间的。
+出于好奇，我们的编码顺序 DTS 是（帧：1,6,4,2,3,5），但是我们的播放顺序是（帧：1,2,3,4,5）。同时我们可以看到B帧相对于P帧和I帧是比较节约空间的。
 
 ```
 LOG: AVStream->r_frame_rate 60/1
@@ -520,7 +520,7 @@ LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 
 ## 章节 2 - 重新封装
 
-重新封装的意思就是把一种格式转换为另一种格式。例如：我们可以用 FFmpeg 把 [MPEG-4](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG-4_Part_14) 转换成 [MPEG-TS](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG_transport_stream)
+重新封装的意思就是把一种格式转换为另一种格式。例如：我们可以用 FFmpeg 把 [MPEG-4](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG-4_Part_14) 转换成 [MPEG-TS](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG_transport_stream)。
 
 ```bash
 ffmpeg input.mp4 -c copy output.ts
@@ -625,8 +625,6 @@ if (ret < 0) {
 }
 ```
 
-After that, we can copy the streams, packet by packet, from our input to our output streams. We'll loop while it has packets (`av_read_frame`), for each packet we need to re-calculate the PTS and DTS to finally write it (`av_interleaved_write_frame`) to our output format context.
-
 之后，我们把输入流一个包一个包的复制到输出流。我们循环来读取每一个数据包（`av_read_frame`），对于每一数据包我们都要重新计算 PTS 和 DTS，最终我们通过 `av_interleaved_write_frame` 写入输出格式的上下文。
 
 ```c
@@ -730,7 +728,7 @@ make run_remuxing_fragmented_mp4
 >
 > 我们跳过一些细节，但是不用担心：[源码在 github 上](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/blob/master/3_transcoding.c) 。
 
-在这一章，我们将用 C 写一个编码器，它用 **FFmpg/libav** 库里的 [libavcodec](https://link.zhihu.com/?target=https%3A//ffmpeg.org/libavcodec.html)，libavformat 和 libavutil 将视频从 H264 转换到 H265。
+在这一章，我们将用 C 写一个编码器，编码器将会用到 **FFmpg/libav** 里的 [libavcodec](https://link.zhihu.com/?target=https%3A//ffmpeg.org/libavcodec.html)，libavformat 和 libavutil 将视频从 H264 转到 H265。
 
 ![media transcoding flow](/img/transcoding_flow.png)
 
@@ -738,7 +736,7 @@ make run_remuxing_fragmented_mp4
 
 ### 转封装
 
-让我们编译上面的代码开始转化操作，第一步我们需要**加载输入文件**。
+让我们编译上面的代码开始转换操作，第一步我们需要**加载输入文件**。
 
 ```c
 // 为 AVFormatContext 分配内存
@@ -799,9 +797,7 @@ av_write_trailer(encoder_avfc);
 
 ### 转码
 
-前面的章节我们展示了一个转封装的程序，现在我们将对文件做转码，我将会把视频从 `h264` 转到 `h265`。
-
-After we prepared the decoder but before we arrange the output media file we're going to set up the encoder.
+前面的章节我们展示了一个转封装的程序，现在我们将对文件做转码，我们会把视频从 `h264` 转到 `h265`。
 
 在我们解码之后和输出之前，我们将要开始设置我们的编码器。
 
@@ -898,8 +894,6 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
 }
 
 ```
-
-We converted the media stream from `h264` to `h265`, as expected the `h265` version of the media file is smaller than the `h264` however the [created program](/3_transcoding.c) is capable of:
 
 我们转换媒体流从 h264 到 h265，和我们预期的差不多，h265 的文件小于 h264，从[创建的程序](/3_transcoding.c)能够看出：
 
