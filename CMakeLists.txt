@@ -35,6 +35,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/small_bunny_1080p_60fps.mp4 DESTINATION ${
 # add library
 set(debug_src ${CMAKE_CURRENT_SOURCE_DIR}/video_debugging.c)
 add_library(video_debug ${debug_src})
+link_libraries(video_debug)
 
 # add project/executables
 file(GLOB srcs *.c)
