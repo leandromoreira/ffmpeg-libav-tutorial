@@ -4,3 +4,6 @@ bunny_1080p_60fps.mp4
 bunny_1s_gop.mp4
 bunny_1s_gop.mp4.ts
 bunny_1s_gop.mp4.webm
+.vscode
+.clangd
+compile_commands.json
