@@ -115,6 +115,7 @@ int main(int argc, const char *argv[])
         video_stream_index = i;
         pCodec = pLocalCodec;
         pCodecParameters = pLocalCodecParameters;
+        break;
       }
 
       logging("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
@@ -125,6 +126,12 @@ int main(int argc, const char *argv[])
     // print its name, id and bitrate
     logging("\tCodec %s ID %d bit_rate %lld", pLocalCodec->name, pLocalCodec->id, pLocalCodecParameters->bit_rate);
   }
+
+  if (video_stream_index == -1) {
+    logging("File %s does not contain a video stream!", argv[1]);
+    return -1;
+  }
+
   // https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html
   AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
   if (!pCodecContext)
