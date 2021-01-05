@@ -105,7 +105,8 @@ int main(int argc, const char *argv[])
 
     if (pLocalCodec==NULL) {
       logging("ERROR unsupported codec!");
-      return -1;
+      // In this example if the codec is not found we just skip it
+      continue;
     }
 
     // when the stream is a video we store its index, codec parameters and codec
