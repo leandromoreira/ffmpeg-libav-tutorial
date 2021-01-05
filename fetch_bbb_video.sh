@@ -17,5 +17,5 @@ check_cmd()
 check_cmd wget
 check_cmd ffmpeg
 
-wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
+wget -O bunny_1080p_60fps.mp4 https://github.com/leandromoreira/big-buck-bunny/raw/main/Big-Buck-Bunny-1080p-h264-4mb-60fps-multi-ch-ac3.mp4
 ffmpeg -y -i bunny_1080p_60fps.mp4 -ss 00:01:24 -t 00:00:10 small_bunny_1080p_60fps.mp4
