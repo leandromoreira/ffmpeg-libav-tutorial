@@ -1,3 +1,4 @@
+#!/bin/bash
 read -p "WARNING: You're about to download 340MB, are you sure? (yN) " -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]]
