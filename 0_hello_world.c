@@ -235,10 +235,11 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 
     if (response >= 0) {
       logging(
-          "Frame %d (type=%c, size=%d bytes) pts %d key_frame %d [DTS %d]",
+          "Frame %d (type=%c, size=%d bytes, format=%d) pts %d key_frame %d [DTS %d]",
           pCodecContext->frame_number,
           av_get_picture_type_char(pFrame->pict_type),
           pFrame->pkt_size,
+          pFrame->format,
           pFrame->pts,
           pFrame->key_frame,
           pFrame->coded_picture_number
@@ -246,6 +247,14 @@ static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFra
 
       char frame_filename[1024];
       snprintf(frame_filename, sizeof(frame_filename), "%s-%d.pgm", "frame", pCodecContext->frame_number);
+      // Check if the frame is a planar YUV 4:2:0, 12bpp
+      // That is the format of the provided .mp4 file
+      // RGB formats will definitely not give a gray image
+      // Other YUV image may do so, but untested, so give a warning
+      if (pFrame->format != AV_PIX_FMT_YUV420P)
+      {
+        logging("Warning: the generated file may not be a grayscale image, but could e.g. be just the R component if the video format is RGB");
+      }
       // save a grayscale frame into a .pgm file
       save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
     }
