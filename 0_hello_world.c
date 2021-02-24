@@ -115,7 +115,6 @@ int main(int argc, const char *argv[])
         video_stream_index = i;
         pCodec = pLocalCodec;
         pCodecParameters = pLocalCodecParameters;
-        break;
       }
 
       logging("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
