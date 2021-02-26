@@ -33,36 +33,36 @@ __목차__
   * [Chapter 2 - remuxing](#chapter-2---remuxing)
   * [Chapter 3 - transcoding](#chapter-3---transcoding)
 
-# Intro
+# 소개
 
-## video - what you see!
+## 비디오 - 당신이 무엇을 보는지!
 
-If you have a sequence series of images and change them at a given frequency (let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision).
-In summary this is the very basic idea behind a video: **a series of pictures / frames running at a given rate**.
+만약 당신이 여러 연속된 이미지들을 가지고 있고 이것들을 주어진 주파수에 맞게 변화시킨다면 (이를테면 [초당 24장의 이미지](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), 당신은 [움직임의 잔상](https://en.wikipedia.org/wiki/Persistence_of_vision)을 만들게 될 것입니다.
+요약하면 이게 비디오라는 것의 가장 기본적인 아이디어입니다: **정해진 속도에 맞게 돌아가는 연속된 사진들 / 프레임들** 
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
 
 Zeitgenössische Illustration (1886)
 
-## audio - what you listen!
+## 오디오 - 당신이 무엇을 듣는지!
 
-Although a muted video can express a variety of feelings, adding sound to it brings more pleasure to the experience.
+음소거된 비디오만으로도 다양한 감정들을 표현할 수는 있지만, 여기에 소리를 더해준다면 훨씬 더 즐거운 경험을 가져다 줄 것입니다.  
 
-Sound is the vibration that propagates as a wave of pressure, through the air or any other transmission medium, such as a gas, liquid or solid.
+소리는 공기 혹은 가스, 액체, 고체와 같은 다른 매체를 압력의 파동의 형태로 전파되는 진동입니다.
 
-> In a digital audio system, a microphone converts sound to an analog electrical signal, then an analog-to-digital converter (ADC) — typically using [pulse-code modulation (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) - converts the analog signal into a digital signal.
+> 디지털 오디오 시스템에서는, 마이크가 소리를 아날로그 전기 신호로 전환하고, 아날로그-디지털 변환기 (ADC) - 보통 [펄스-부호 변조 (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation)를 이용하여 - 아날로그 신호를 디지탈 신호로 변환합니다.
 
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
->[Source](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
+>[원문](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
 
-## codec - shrinking data
+## 코덱 - 데이터를 줄이기
 
-> CODEC is an electronic circuit or software that **compresses or decompresses digital audio/video.** It converts raw (uncompressed) digital audio/video to a compressed format or vice versa.
+> CODEC은 **디지털 오디오/비디오를 압축하거나 압축해제하는** 전자회로나 소프트웨어입니다. 이것은 raw (압축이안된) 디지털 오디오/비디오를 압축된 형태로 혹은 그 반대로 변환합니다.
 > https://en.wikipedia.org/wiki/Video_codec
 
-But if we chose to pack millions of images in a single file and called it a movie, we might end up with a huge file. Let's do the math:
+하지만 우리가 수많은 이미지들을 차곡차곡 채워서 하나의 파일로 만들기로 했고 이것을 영화라고 부르기로 했다면, 우리는 결국 엄청나게 큰 하나의 파일을 접하게 될 것 입니다. 한번 계산해봅시다: 
 
-Suppose we are creating a video with a resolution of `1080 x 1920` (height x width) and that we'll spend `3 bytes` per pixel (the minimal point at a screen) to encode the color (or [24 bit color](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), what gives us 16,777,216 different colors) and this video runs at `24 frames per second` and it is `30 minutes` long.
+한번 가정해봅시다. 해상도가 `1080 x 1920` (높이 x 너비)인 비디오를 하나 만들건데 색을 인코딩하는데 픽셀당 `3 bytes` (화면의 최소 화소)를 쓸 것입니다. (혹은 [24비트 컬러](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), 16,777,216개의 다른 색상을 제공) 그리고 이 비디오는 `초당 24프레임`으로 재생되고 `30분` 정도 길이입니다. 
 
 ```c
 toppf = 1080 * 1920 //total_of_pixels_per_frame
@@ -73,16 +73,16 @@ fps = 24 //frames_per_second
 required_storage = tis * fps * toppf * cpp
 ```
 
-This video would require approximately `250.28GB` of storage or `1.11Gbps` of bandwidth! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+이 비디오는 거의 `250.28GB`의 저장 용량이 필요하며 `1.11Gbps`의 대역폭이 요구됩니다! 이것이 바로 우리가 [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work) 사용이 필요한 이유입니다.
 
-## container - a comfy place for audio and video
+## 컨테이너 - 오디오와 비디오가 쉬는 곳
 
-> A container or wrapper format is a metafile format whose specification describes how different elements of data and metadata coexist in a computer file.
+> 컨테이너 혹은 래퍼(wrapper) 포맷은 데이터와 메타데이터의 다양한 요소들이 어떻게 하나의 컴퓨터 파일에 구성되어있는지를 기술하는 스펙을 담은 메타파일 포맷입니다.
 > https://en.wikipedia.org/wiki/Digital_container_format
 
-A **single file that contains all the streams** (mostly the audio and video) and it also provides **synchronization and general metadata**, such as title, resolution and etc.
+**하나의 파일이 모든 스트림들을 담고 있고** (주로 오디오와 비디오) 이것은 또 동기화와 제목, 해상도 등과 같은 일반적인 메타데이터도 제공합니다.
 
-Usually we can infer the format of a file by looking at its extension: for instance a `video.webm` is probably a video using the container [`webm`](https://www.webmproject.org/).
+보통의 경우 우리는 파일의 포맷을 이것의 확장자를 보고 유추할 수 있습니다: 예를들면 `video.webm`은 아마도 [`webm`](https://www.webmproject.org/)를 컨테이너로 사용하는 비디오입니다.
 
 ![container](/img/container.png)
 
