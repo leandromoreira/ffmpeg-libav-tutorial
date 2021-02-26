@@ -1,37 +1,34 @@
-[🇨🇳](/README-cn.md "Simplified Chinese")
-[🇰🇷](/README-ko.md "Korean")
-
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
-I was looking for a tutorial/book that would teach me how to start to use [FFmpeg](https://www.ffmpeg.org/) as a library (a.k.a. libav) and then I found the ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) tutorial.
-Unfortunately it was deprecated, so I decided to write this one.
+[FFmpeg](https://www.ffmpeg.org/)을 라이브러리처럼(a.k.a. libav) 사용하려면 어떻게 시작해야할지를 학습하기 위해 튜토리얼/책을 찾아봤었습니다. 그리고는 ["How to write a video player in less than 1k lines"](http://dranger.com/ffmpeg/) 라는 튜토리얼을 찾았습니다.
+하지만 안타깝게도 그것은 더이상 유지가 안되고 있었기에 이 글을 쓰기로 결정했습니다.
 
-Most of the code in here will be in c **but don't worry**: you can easily understand and apply it to your preferred language.
-FFmpeg libav has lots of bindings for many languages like [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) and even if your language doesn't have it, you can still support it through the `ffi` (here's an example with [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
+여기서 사용된 대부분의 코드는 C로 되어있습니다. **하지만 염려하지 마세요**: 당신은 쉽게 이해할 수 있고 당신이 선호하는 언어로도 적용할 수 있을테니까요.
+FFmpeg libav는 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) 와 같은 다양한 언어에 대해 많은 bindings을 제공합니다. 만약 당신이 사용하는 언어에 그것이 없다면 `ffi` 를 통해 이것을 지원할 수 있습니다. ([Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 예시)
 
-We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `FFmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
+우리는 비디오와 오디오, 코덱, 컨테이너가 무엇인지에 대해 빠르게 학습한 후에 `FFmpeg` 명령을 어떻게 사용하는지 대해서 파헤쳐보고 마지막으로 코드도 작성해볼 것입니다, [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way) 섹션으로 바로 넘어가도 좋습니다.
 
-Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that is worth studying.
+혹자는 인터넷 비디오 스트리밍이 전통적인 TV의 미래라고 이야기하기도 합니다. 어떻게 되든 FFmpeg은 공부해둘만한 가치가 있는 것입니다.
 
-__Table of Contents__
+__목차__
 
-* [Intro](#intro)
-  * [video - what you see!](#video---what-you-see)
-  * [audio - what you listen!](#audio---what-you-listen)
-  * [codec - shrinking data](#codec---shrinking-data)
-  * [container - a comfy place for audio and video](#container---a-comfy-place-for-audio-and-video)
-* [FFmpeg - command line](#ffmpeg---command-line)
-  * [FFmpeg command line tool 101](#ffmpeg-command-line-tool-101)
-* [Common video operations](#common-video-operations)
+* [소개](#intro)
+  * [비디오 - 당신이 무엇을 보는지!](#video---what-you-see)
+  * [오디오 - 당신이 무엇을 듣는지!](#audio---what-you-listen)
+  * [코덱 - 데이터를 줄이기](#codec---shrinking-data)
+  * [컨테이너 - 오디오와 비디오가 쉬는 곳](#container---a-comfy-place-for-audio-and-video)
+* [FFmpeg - 커맨드 라인](#ffmpeg---command-line)
+  * [FFmpeg 커맨드 라인 도구 101](#ffmpeg-command-line-tool-101)
+* [비디오 공통 연산](#common-video-operations)
   * [Transcoding](#transcoding)
   * [Transmuxing](#transmuxing)
   * [Transrating](#transrating)
   * [Transsizing](#transsizing)
   * [Bonus Round: Adaptive Streaming](#bonus-round-adaptive-streaming)
   * [Going beyond](#going-beyond)
-* [Learn FFmpeg libav the Hard Way](#learn-ffmpeg-libav-the-hard-way)
+* [삽질하면서 FFmpeg libav 배우기](#learn-ffmpeg-libav-the-hard-way)
   * [Chapter 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
-    * [FFmpeg libav architecture](#ffmpeg-libav-architecture)
+    * [FFmpeg libav 아키텍처](#ffmpeg-libav-architecture)
   * [Chapter 1 - timing](#chapter-1---syncing-audio-and-video)
   * [Chapter 2 - remuxing](#chapter-2---remuxing)
   * [Chapter 3 - transcoding](#chapter-3---transcoding)
