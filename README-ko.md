@@ -19,19 +19,19 @@ __목차__
   * [컨테이너 - 오디오와 비디오가 쉬는 곳](#container---a-comfy-place-for-audio-and-video)
 * [FFmpeg - 커맨드 라인](#ffmpeg---command-line)
   * [FFmpeg 커맨드 라인 도구 101](#ffmpeg-command-line-tool-101)
-* [비디오 공통 연산](#common-video-operations)
-  * [Transcoding](#transcoding)
-  * [Transmuxing](#transmuxing)
-  * [Transrating](#transrating)
-  * [Transsizing](#transsizing)
-  * [Bonus Round: Adaptive Streaming](#bonus-round-adaptive-streaming)
-  * [Going beyond](#going-beyond)
+* [범용 비디오 연산](#common-video-operations)
+  * [트랜스코딩 (Transcoding)](#transcoding)
+  * [트랜스먹싱 (Transmuxing)](#transmuxing)
+  * [트랜스레이팅 (Transrating)](#transrating)
+  * [트랜스사이징 (Transsizing)](#transsizing)
+  * [보너스: 적용형 스트리밍 (Adaptive Streaming)](#bonus-round-adaptive-streaming)
+  * [더 들어가기](#going-beyond)
 * [삽질하면서 FFmpeg libav 배우기](#learn-ffmpeg-libav-the-hard-way)
-  * [Chapter 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
+  * [챕터 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
     * [FFmpeg libav 아키텍처](#ffmpeg-libav-architecture)
-  * [Chapter 1 - timing](#chapter-1---syncing-audio-and-video)
-  * [Chapter 2 - remuxing](#chapter-2---remuxing)
-  * [Chapter 3 - transcoding](#chapter-3---transcoding)
+  * [챕터 1 - 타이밍 (timing)](#chapter-1---syncing-audio-and-video)
+  * [챕터 2 - 리먹싱 (remuxing)](#chapter-2---remuxing)
+  * [첩터 3 - 트랜스코딩 (transcoding)](#chapter-3---transcoding)
 
 # 소개
 
@@ -135,19 +135,19 @@ bunny_1080p_60fps_vp9.webm # 출력 url
 
 Werner Robitza가 작성한 꼭 읽고/실행해볼만한 [FFmpeg으로 인코딩하고 편집하는 것에 대한 튜토리얼](http://slhck.info/ffmpeg-encoding-course/#/)이 있습니다.
 
-# Common video operations
+# 범용 비디오 연산
 
-While working with audio/video we usually do a set of tasks with the media.
+오디오/비디오 작업을 하는 동안 우리는 일반적으로 미디어로 일련의 작업을 수행합니다.
 
-## Transcoding
+## 트랜스코딩 (Transcoding)
 
 ![transcoding](/img/transcoding.png)
 
-**What?** the act of converting one of the streams (audio or video) from one CODEC to another one.
+**무엇인가?** 스트림 (오디오 또는 비디오) 중에 하나를 기존 코덱에서 다른 코덱으로 변환하는 행위
 
-**Why?** sometimes some devices (TVs, smartphones, console and etc) doesn't support X but Y and newer CODECs provide better compression rate.
+**왜?** 가끔 어떤 장치들은 (텔레비전, 스마트폰, 콘솔 등) X는 지원하지 않지만 Y를 지원합니다. 그리고 더 새로운 코덱들은 더 나은 압축률을 제공하기도 합니다.
 
-**How?** converting an `H264` (AVC) video to an `H265` (HEVC).
+**어떻게?** `H264` (AVC) 비디오를 `H265` (HEVC)로 변환하기.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -155,15 +155,15 @@ $ ffmpeg \
 bunny_1080p_60fps_h265.mp4
 ```
 
-## Transmuxing
+## 트랜스먹싱 (Transmuxing)
 
 ![transmuxing](/img/transmuxing.png)
 
-**What?** the act of converting from one format (container) to another one.
+**무엇인가?** 하나의 포맷을 (컨테이너) 다른 포맷으로 변환하는 행위
 
-**Why?** sometimes some devices (TVs, smartphones, console and etc) doesn't support X but Y and sometimes newer containers provide modern required features.
+**왜?** 가끔 어떤 장치들은 (텔레비전, 스마트폰, 콘솔 등) X는 지원하지 않지만 Y를 지원합니다. 그리고 때때로 더 새로운 컨테이터들은 최신으로 요구되는 피처들을 제공합니다.
 
-**How?** converting a `mp4` to a `webm`.
+**어떻게?** `mp4`에서 `webm`으로 변환하기.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -171,15 +171,15 @@ $ ffmpeg \
 bunny_1080p_60fps.webm
 ```
 
-## Transrating
+## 트랜스레이팅 (Transrating)
 
 ![transrating](/img/transrating.png)
 
-**What?** the act of changing the bit rate, or producing other renditions.
+**무엇인가?** 비트레이트를 변환하거나 다른 변환본을 만드는 행위.
 
-**Why?** people will try to watch your video in a `2G` (edge) connection using a less powerful smartphone or in a `fiber` Internet connection on their 4K TVs therefore you should offer more than one rendition of the same video with different bit rate.
+**왜?** 사람들은 `2G` (edge)가 연결된 저사양의 스마트폰에서든 `광통신` 인터넷이 연결된 4K 텔레비전에든 당신의 비디오 볼 것이다. 그래서 같은 비디오라도 여러 비트레이트를 가진 하나 이상의 변환본을 (rendition) 제공해야합니다.
 
-**How?** producing a rendition with bit rate between 3856K and 2000K.
+**어떻게?** 3856K와 2000K 사이의 비트레이트를 가진 변환본을 생성하기.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -187,17 +187,17 @@ $ ffmpeg \
 bunny_1080p_60fps_transrating_964_3856.mp4
 ```
 
-Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate control](http://slhck.info/posts/).
+보통 트랜스레이팅(transrating)은 트랜스사이징(transsizing)과 함께 사용합니다. Werner Robitza가 작성한 또 다른 필독/실행물 [FFmpeg rate 제어에 대한 연재 포스팅](http://slhck.info/posts/)가 있습니다.
 
-## Transsizing
+## 트랜스사이징 (Transsizing)
 
 ![transsizing](/img/transsizing.png)
 
-**What?** the act of converting from one resolution to another one. As said before transsizing is often used with transrating.
+**무엇인가?** 하나의 해상도에서 다른 것으로 변환하는 행위. 이전에 언급한 것처럼 트랜스사이징(transsizing)은 주로 트랜스레이팅(transrating)과 함께 사용됩니다.
 
-**Why?** reasons are about the same as for the transrating.
+**왜?** 트랜스레이팅(transrating)에서의 이유와 동일함.
 
-**How?** converting a `1080p` to a `480p` resolution.
+**어떻게?** `1080p`의 해상도를 `480p`로 변환하기.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -205,15 +205,15 @@ $ ffmpeg \
 bunny_1080p_60fps_transsizing_480.mp4
 ```
 
-## Bonus Round: Adaptive Streaming
+## 보너스: 적응형 스트리밍
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
-**What?** the act of producing many resolutions (bit rates) and split the media into chunks and serve them via http.
+**무엇인가?** 다양한 (비트레이트)의 해상도를 생성하고 미디어들을 여러 청크로 나눠서 http를 통해 서비스하는 행위.
 
-**Why?** to provide a flexible media that can be watched on a low end smartphone or on a 4K TV, it's also easy to scale and deploy but it can add latency.
+**왜?** 저사양 스마트폰 혹은 4K TV에서 시청할 수 있는 유연한 미디어를 제공하기 위해, 또한 이렇게 하면 확장이나 배포하기가 쉽습니다. 다만 지연시간이 생길 수 있습니다.
 
-**How?** creating an adaptive WebM using DASH.
+**어떻게?** DASH를 이용하여 적응형 WebM을 생성하기.
 ```bash
 # video streams
 $ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 160x90 -b:v 250k -keyint_min 150 -g 150 -an -f webm -dash 1 video_160x90_250k.webm
@@ -243,12 +243,12 @@ $ ffmpeg \
  manifest.mpd
 ```
 
-PS: I stole this example from the [Instructions to playback Adaptive WebM using DASH](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)
+PS: 저는 이 예제를 [DASH를 이용한 Adaptive WebM 재생에 대한 지침](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)에서 가져왔습니다.
 
-## Going beyond
+## 더 들어가기
 
-There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly).
-I use it in conjunction with *iMovie* to produce/edit some videos for YouTube and you can certainly use it professionally.
+[FFmpeg에 대한 아주 수많은 다른 사용방법들이](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly) 있습니다.
+저는 이걸 YouTube 용 동영상들을 만들고/편집하는데 *iMovie*와 함께 사용합니다. 그리고 물론 당신도 이걸 프로페셔널처럼 사용하실 수 있습니다.
 
 # Learn FFmpeg libav the Hard Way
 
