@@ -27,7 +27,7 @@ __목차__
   * [보너스: 적용형 스트리밍 (Adaptive Streaming)](#bonus-round-adaptive-streaming)
   * [더 들어가기](#going-beyond)
 * [삽질하면서 FFmpeg libav 배우기](#learn-ffmpeg-libav-the-hard-way)
-  * [챕터 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
+  * [챕터 0 - 악명 높은 hello world](#chapter-0---the-infamous-hello-world)
     * [FFmpeg libav 아키텍처](#ffmpeg-libav-architecture)
   * [챕터 1 - 타이밍 (timing)](#chapter-1---syncing-audio-and-video)
   * [챕터 2 - 리먹싱 (remuxing)](#chapter-2---remuxing)
@@ -250,84 +250,84 @@ PS: 저는 이 예제를 [DASH를 이용한 Adaptive WebM 재생에 대한 지�
 [FFmpeg에 대한 아주 수많은 다른 사용방법들이](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly) 있습니다.
 저는 이걸 YouTube 용 동영상들을 만들고/편집하는데 *iMovie*와 함께 사용합니다. 그리고 물론 당신도 이걸 프로페셔널처럼 사용하실 수 있습니다.
 
-# Learn FFmpeg libav the Hard Way
+# 삽질하면서 FFmpeg libav 배우기
 
-> Don't you wonder sometimes 'bout sound and vision?
+> 가끔 '소리나는 것과 보이는 것이' 궁금하지 않으세요?
 > **David Robert Jones**
 
-Since the [FFmpeg](#ffmpeg---command-line) is so useful as a command line tool to do essential tasks over the media files, how can we use it in our programs?
+[FFmpeg](#ffmpeg---command-line)는 미디어 파일들에 대한 필수 작업들을 수행하는 명령줄 도구로써 매우 유용합니다, 어떻게 우리의 프로그램에 이용할 수 있을까요?
 
-FFmpeg is [composed by several libraries](https://www.ffmpeg.org/doxygen/trunk/index.html) that can be integrated into our own programs.
-Usually, when you install FFmpeg, it installs automatically all these libraries. I'll be referring to the set of these libraries as **FFmpeg libav**.
+FFmpeg는 우리의 프로그램에 통합될 수 있는 [여러 라이브러리들로 구성](https://www.ffmpeg.org/doxygen/trunk/index.html)되어있습니다.
+보통, FFmpeg을 설치할때 이 모든 라이브러리들도 자동으로 설치됩니다. 이 라이브러리 모음들을 **FFmpeg libav**라고 하겠습니다.
 
-> This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/), particularly his book Learn C the Hard Way.
+> 이 제목은 Zed Shaw의 [Learn X the Hard Way](https://learncodethehardway.org/) 시리즈, 특히 그의 책 Learn C the Hard Way에 대한 오마주입니다.
 
-## Chapter 0 - The infamous hello world
-This hello world actually won't show the message `"hello world"` in the terminal :tongue:
-Instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and, in the end, we'll **decode some frames and save them as image files**.
+## 챕터 0 - 악명 높은 hello world
+이 hello world는 실제로 `"hello world"` 메시지를 터미널에 보여주진 않습니다. :tongue:
+대신 우리는 **비디오에 대한 정보를 출력**할 것입니다, 비디오의 포맷 (컨테이너), 길이, 해상도, 오디오 채널들 같은 것들을 말입니다. 그리고는 마지막에는 **몇몇 프레임들을 디코드하고 이미지 파일로 저장**해보겠습니다.
 
-### FFmpeg libav architecture
+### FFmpeg libav 아키텍처
 
-But before we start to code, let's learn how **FFmpeg libav architecture** works and how its components communicate with others.
+하지만 코딩을 시작하기 전에, **FFmpeg libav 아키텍처**가 어떻게 동작하는지 이것들의 컴포넌트들이 서로 어떻게 통신하는지를 배워봅시다. 
 
-Here's a diagram of the process of decoding a video:
+여기 비디오가 디코딩되는 프로세스에 대한 다이어그램이 하나 있습니다.
 
 ![ffmpeg libav architecture - decoding process](/img/decoding.png)
 
-You'll first need to load your media file into a component called [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (the video container is also known as format).
-It actually doesn't fully load the whole file: it often only reads the header.
+우선 당신의 미디어 파일을 [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (비디오 컨테이너는 포맷이라고도 합니다)라고 불리는 컴포넌트로 불러올 필요가 있습니다.
+이건 사실 파일 전체를 불러오는건 아닙니다: 종종 헤더만을 읽습니다.
 
-Once we loaded the minimal **header of our container**, we can access its streams (think of them as a rudimentary audio and video data).
-Each stream will be available in a component called [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
+일단 최소한의 **컨테이너의 헤더**를 불러왔다면, 우리는 이것의 스트림들 (기본적이고 필수적인 오디오와 비디오데이터라고 간주하시면 됩니다)에 접근할 수 있습니다.
+각 스트림은 [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html)라고 불리는 컴포넌트로 접근 가능합니다.
 
-> Stream is a fancy name for a continuous flow of data.
+> 스트림은 데이터의 연속적인 흐름을 의미하는 fancy한 이름입니다.
 
-Suppose our video has two streams: an audio encoded with [AAC CODEC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) and a video encoded with [H264 (AVC) CODEC](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). From each stream we can extract **pieces (slices) of data** called packets that will be loaded into components named [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
+우리 비디오가 두개의 스트림을 가지고 있다고 해봅시다: 오디오는 [AAC CODEC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)로 인코딩되어있고 비디오는 [H264 (AVC) CODEC](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC)로 인코딩되어있습니다. 각 스트림으로부터 [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html)라고 하는 컴포넌트로 로드될 패킷이라 불리는 **데이터의 조각들**을 추출할 수 있습니다.
 
-The **data inside the packets are still coded** (compressed) and in order to decode the packets, we need to pass them to a specific [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html).
+**패킷안의 데이터는 여전히 인코딩되어 있습니다** (압축된상태) 그리고 이 패킷들을 디코딩하기 위해서는, 우리는 이것들을 특정한 [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html)에 넘겨야합니다.
 
-The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) and finally, this component gives us **the uncompressed frame**.  Noticed that the same terminology/process is used either by audio and video stream.
+`AVCodec`은 그것들을 [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html)으로 디코딩합니다 그리고 마지막으로, 이 컴포넌트는 우리에게 **압축 해제된 프레임**을 넘겨줍니다. 오디오 및 비디오 스트림에서 동일한 용어/프로세스가 사용된다는 점을 유의하십시오.
 
-### Requirements
+### 요구 사항
 
-Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment,** we'll also use the big buck bunny video so if you don't have it locally just run the command `make fetch_small_bunny_video`.
+어떤 분들은 컴파일하고 예제를 실행하는데 이슈들을 겪고 계셔서 **우리의 개발/실행 환경으로 [`Docker`](https://docs.docker.com/install/)를 사용할 것입니다,** 우리는 또한 big buck bunny 비디오를 사용할 것인데 이것을 로컬에 가지고 있지 않다면 `make fetch_small_bunny_video` 명령만 실행해주시면 됩니다.
 
-### Chapter 0 - code walkthrough
+### 챕터 0 - 몸풀기 코드
 
-> #### TLDR; show me the [code](/0_hello_world.c) and execution.
+> #### TLDR; [코드](/0_hello_world.c)랑 실행을 보여주세요.
 > ```bash
 > $ make run_hello
 > ```
 
-We'll skip some details, but don't worry: the [source code is available at github](/0_hello_world.c).
+좀 상세한 부분은 넘어가겠습니다, 그러나 걱정하진 마세요: [소스 코드는 github에 있습니다](/0_hello_world.c). 
 
-We're going to allocate memory to the component [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) that will hold  information about the format (container).
+포맷 (컨테이너)에 관한 정보를 들고 있는 [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 컴포넌트에게 메모리를 할당해보겠습니다.
 
 ```c
 AVFormatContext *pFormatContext = avformat_alloc_context();
 ```
 
-Now we're going to open the file and read its header and fill the `AVFormatContext` with minimal information about the format (notice that usually the codecs are not opened).
-The function used to do this is [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49). It expects an `AVFormatContext`, a `filename` and two optional arguments: the [`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html) (if you pass `NULL`, FFmpeg will guess the format) and the [`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) (which are the options to the demuxer).
+이제 우리는 파일을 열고 헤더를 읽어서 `AVFormatContext`에 포맷에 관한 기본적인 정보를 채워줄 것입니다 (보통 코덱은 열리지 않음).
+이것을 위해 사용되는 함수는 [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49)입니다. 이 함수는 `AVFormatContext`, `filename`과 두개의 옵셔널 인자들을 받습니다: [`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html) (`NULL`을 넘기면, FFmpeg이 포맷을 추측합니다)와 [`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) (demuxer에 대한 옵션임)
 
 ```c
 avformat_open_input(&pFormatContext, filename, NULL, NULL);
 ```
 
-We can print the format name and the media duration:
+포맷 이름과 미디어 길이를 출력할 수 있습니다:
 
 ```c
 printf("Format %s, duration %lld us", pFormatContext->iformat->long_name, pFormatContext->duration);
 ```
 
-To access the `streams`, we need to read data from the media. The function [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) does that.
-Now, the `pFormatContext->nb_streams` will hold the amount of streams and the `pFormatContext->streams[i]` will give us the `i` stream (an [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html)).
+`streams`에 접근하기 위해서는, 미디어로부터 데이터를 읽어야합니다. [`avformat_find_stream_info`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#gad42172e27cddafb81096939783b157bb) 함수가 바로 그것입니다.
+자, `pFormatContext->nb_streams`가 스트림의 개수를 가지고 있고 `pFormatContext->streams[i]`는 `i` 스트림 ([`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html))을 반환합니다.
 
 ```c
 avformat_find_stream_info(pFormatContext,  NULL);
 ```
 
-Now we'll loop through all the streams.
+이제 모든 스트림들에 대해 루프를 돌아보겠습니다.
 
 ```c
 for (int i = 0; i < pFormatContext->nb_streams; i++)
@@ -336,18 +336,19 @@ for (int i = 0; i < pFormatContext->nb_streams; i++)
 }
 ```
 
-For each stream, we're going to keep the [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html), which describes the properties of a codec used by the stream `i`.
+각 스트림에 대해서, `i` 스트림이 사용하고 있는 코덱 속성들을 기술하고 있는 [`AVCodecParameters`](https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html)를 가져오겠습니다.
 
 ```c
 AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
 ```
 
-With the codec properties we can look up the proper CODEC querying the function [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) and find the registered decoder for the codec id and return an [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html), the component that knows how to en**CO**de and **DEC**ode the stream.
+이 코덱 속성을 이용하여 [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) 함수를 요청함으로써 적절한 코덱을 찾을 수 있습니다. 코덱 id에 맞는 등록된 디코더를 찾고 스트림을 어떻게 en**CO**de 과 **DEC**ode할지를 알고 있는 컴포넌트인 [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html)를 반환할 수 있습니다.
+
 ```c
 AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
 ```
 
-Now we can print information about the codecs.
+이제 코덱에 관한 정보를 출력할 수 있습니다.
 
 ```c
 // specific for video and audio
@@ -360,9 +361,9 @@ if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
 printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pLocalCodecParameters->bit_rate);
 ```
 
-With the codec, we can allocate memory for the [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html), which will hold the context for our decode/encode process, but then we need to fill this codec context with CODEC parameters; we do that with [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16).
+이제 코덱으로 우리의 디코딩/인코딩 프로세스에 대한 컨텍스트를 들고 있는 [`AVCodecContext`](https://ffmpeg.org/doxygen/trunk/structAVCodecContext.html)의 메모리를 할당할 수 있습니다, 하지만 이 코덱 컨텍스트는 코덱 파라미터로 채워야합니다; [`avcodec_parameters_to_context`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#gac7b282f51540ca7a99416a3ba6ee0d16)로 하시면 됩니다.
 
-Once we filled the codec context, we need to open the codec. We call the function [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and then we can use it.
+일단 코덱 컨텍스트를 채웠다면, 우리는 코덱을 열 수 있습니다. [`avcodec_open2`](https://ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d)를 호출해서 사용할 수 있습니다. 
 
 ```c
 AVCodecContext *pCodecContext = avcodec_alloc_context3(pCodec);
@@ -370,14 +371,14 @@ avcodec_parameters_to_context(pCodecContext, pCodecParameters);
 avcodec_open2(pCodecContext, pCodec, NULL);
 ```
 
-Now we're going to read the packets from the stream and decode them into frames but first, we need to allocate memory for both components, the [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html) and [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html).
+이제 스트림으로부터 패킷을 읽어 디코딩하여 프레임으로 만들어볼 예정입니다. 그러나 우선, [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html)와 [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) 두 컴포넌트에 대해 메모리 할당이 필요합니다.
 
 ```c
 AVPacket *pPacket = av_packet_alloc();
 AVFrame *pFrame = av_frame_alloc();
 ```
 
-Let's feed our packets from the streams with the function [`av_read_frame`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61) while it has packets.
+패킷이 있는 동안 [`av_read_frame`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga4fdb3084415a82e3810de6ee60e46a61) 함수를 이용해 스트림으로부터 패킷을 받아오겠습니다. 
 
 ```c
 while (av_read_frame(pFormatContext, pPacket) >= 0) {
@@ -385,19 +386,19 @@ while (av_read_frame(pFormatContext, pPacket) >= 0) {
 }
 ```
 
-Let's **send the raw data packet** (compressed frame) to the decoder, through the codec context, using the function [`avcodec_send_packet`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3).
+코덱 컨텍스트를 통해 [`avcodec_send_packet`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3) 함수를 이용해서 디코더에 **raw 데이터 패킷 (압축된 프레임)을 보내**봅시다.
 
 ```c
 avcodec_send_packet(pCodecContext, pPacket);
 ```
 
-And let's **receive the raw data frame** (uncompressed frame) from the decoder, through the same codec context, using the function [`avcodec_receive_frame`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c).
+그리고 동일한 코덱 컨텍스트를 통해 [`avcodec_receive_frame`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c) 함수를 이용해서 디코더로부터 **raw 데이터 프레임 (압축 해제된 프레임)를 받아**봅시다.
 
 ```c
 avcodec_receive_frame(pCodecContext, pFrame);
 ```
 
-We can print the frame number, the [PTS](https://en.wikipedia.org/wiki/Presentation_timestamp), DTS, [frame type](https://en.wikipedia.org/wiki/Video_compression_picture_types) and etc.
+우리는 프레임 번호, [PTS](https://en.wikipedia.org/wiki/Presentation_timestamp), DTS, [프레임 타입](https://en.wikipedia.org/wiki/Video_compression_picture_types) 등을 출력해볼 수 있습니다.
 
 ```c
 printf(
@@ -412,7 +413,7 @@ printf(
 );
 ```
 
-Finally we can save our decoded frame into a [simple gray image](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example). The process is very simple, we'll use the `pFrame->data` where the index is related to the [planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr), we just picked `0` (Y) to save our gray image.
+마지막으로 디코딩된 프레임을 [심플 흑백 이미지](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example)로 저장해볼 수 있습니다. 이 과정은 매우 단순합니다, 인덱스가 [planes Y, Cb, Cr](https://en.wikipedia.org/wiki/YCbCr)를 참조하고 있는 `pFrame->data`를 사용할 것입니다. 우리는 흑백 이미지를 저장하기 위해 `0` (Y) 인덱스를 선택했습니다.
 
 ```c
 save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
@@ -433,7 +434,7 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 }
 ```
 
-And voilà! Now we have a gray scale image with 2MB:
+그럼 voilà! 이제 우리는 2MB짜리 흑백 이미지를 얻어냈습니다:
 
 ![saved frame](/img/generated_frame.png)
 
