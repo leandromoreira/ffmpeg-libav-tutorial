@@ -438,13 +438,13 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 
 ![saved frame](/img/generated_frame.png)
 
-## Chapter 1 - syncing audio and video
+## 챕터 1 - 오디오와 비디오 동기화
 
-> **Be the player** - a young JS developer writing a new MSE video player.
+> **플레이어가 되세요** - 신규 MSE 비디오 플레이어를 작성 중이 젊은 JS 개발자
 
-Before we move to [code a transcoding example](#chapter-2---transcoding) let's talk about **timing**, or how a video player knows the right time to play a frame.
+[트랜스코딩 예제 코드](#chapter-2---transcoding)로 넘어가기 전에 **타이밍** 혹은 어떻게 비디오 플레이어가 하나의 프레임을 제시간에 재생해야하는지에 대해서 이야기해봅시다.
 
-In the last example, we saved some frames that can be seen here:
+지난 예제에서, 우리는 이렇게 보이는 프레임들을 저장했습니다.
 
 ![frame 0](/img/hello_world_frames/frame0.png)
 ![frame 1](/img/hello_world_frames/frame1.png)
@@ -453,26 +453,26 @@ In the last example, we saved some frames that can be seen here:
 ![frame 4](/img/hello_world_frames/frame4.png)
 ![frame 5](/img/hello_world_frames/frame5.png)
 
-When we're designing a video player we need to **play each frame at a given pace**, otherwise it would be hard to pleasantly see the video either because it's playing so fast or so slow.
+우리는 비디오 플레이어를 디자인할때 **각 프레임을 주어진 속도에 재생**해야합니다, 그렇지 않으면 너무 빠르거나 너무 느리게 재생되기 때문에 비디오를 제대로 즐기기 어려울 것입니다.
 
-Therefore we need to introduce some logic to play each frame smoothly. For that matter, each frame has a **presentation timestamp** (PTS) which is an increasing number factored in a **timebase** that is a rational number (where the denominator is known as **timescale**) divisible by the **frame rate (fps)**.
+그래서 뭔가 프레임을 원활하게 재생할 수 있는 로직을 소개할 필요가 있습니다. 이 이슈를 위해, 각 프레임은 **프리젠테이션 타임스탬프** (PTS)를 갖게 되는데 이것은 **프레임속도(fps)** 로 나누어지는 **타임베이스(timebase)** 라고 하는 유리수(분모가 **타임스케일(timescale)** 로 알려진)에 따라 증가하는 숫자입니다.
 
-It's easier to understand when we look at some examples, let's simulate some scenarios.
+예제를 좀 본다면 이해가 더 쉬울 것입니다, 어떤 시나리오를 시뮬레이션해봅시다.
 
-For a `fps=60/1` and `timebase=1/60000` each PTS will increase `timescale / fps = 1000` therefore the **PTS real time** for each frame could be (supposing it started at 0):
+`fps=60/1` 이고 `timebase=1/60000` 라면 각 PTS는 `timescale / fps = 1000`를 증가할 것 입니다. 그래서 각 프레임의 **PTS 실제 시간**은 이렇게 됩니다 (0부터 시작한다고 하면):
 
 * `frame=0, PTS = 0, PTS_TIME = 0`
 * `frame=1, PTS = 1000, PTS_TIME = PTS * timebase = 0.016`
 * `frame=2, PTS = 2000, PTS_TIME = PTS * timebase = 0.033`
 
-For almost the same scenario but with a timebase equal to `1/60`.
+동일한 시나리오지만 타임베이스가 `1/60`이라면.
 
 * `frame=0, PTS = 0, PTS_TIME = 0`
 * `frame=1, PTS = 1, PTS_TIME = PTS * timebase = 0.016`
 * `frame=2, PTS = 2, PTS_TIME = PTS * timebase = 0.033`
 * `frame=3, PTS = 3, PTS_TIME = PTS * timebase = 0.050`
 
-For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3` and the PTS time could be:
+`fps=25/1`와 `timebase=1/75`에 대해서는 각 PTS는 `timescale / fps = 3`만큼 증가할 것이고 PTS 시간은 이렇게 될 것 입니다:
 
 * `frame=0, PTS = 0, PTS_TIME = 0`
 * `frame=1, PTS = 3, PTS_TIME = PTS * timebase = 0.04`
@@ -483,13 +483,13 @@ For a `fps=25/1` and `timebase=1/75` each PTS will increase `timescale / fps = 3
 * ...
 * `frame=4064, PTS = 12192, PTS_TIME = PTS * timebase = 162.56`
 
-Now with the `pts_time` we can find a way to render this synched with audio `pts_time` or with a system clock. The FFmpeg libav provides these info through its API:
+이제 이 `pts_time`으로 오디오의 `pts_time` 혹은 시스템 시간과 동기화해서 재생할 방법을 찾을 수 있습니다. FFmpeg libav는 그 정보들을 아래 API를 통해 제공합니다.
 
 - fps = [`AVStream->avg_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a946e1e9b89eeeae4cab8a833b482c1ad)
 - tbr = [`AVStream->r_frame_rate`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#ad63fb11cc1415e278e09ddc676e8a1ad)
 - tbn = [`AVStream->time_base`](https://ffmpeg.org/doxygen/trunk/structAVStream.html#a9db755451f14e2bf590d4b85d82b32e6)
 
-Just out of curiosity, the frames we saved were sent in a DTS order (frames: 1,6,4,2,3,5) but played at a PTS order (frames: 1,2,3,4,5). Also, notice how cheap are B-Frames in comparison to P or I-Frames.
+호기심에 보자면, 우리가 저장했던 프레임들을 DTS 순으로 (frames: 1,6,4,2,3,5) 보내졌지만 재생은 PTS 순 (frames: 1,2,3,4,5)로 되었습니다. 또한, B-프레임이 P 혹은 I-프레임 대비 얼마나 저렴한지 알 수 있습니다.
 
 ```
 LOG: AVStream->r_frame_rate 60/1
