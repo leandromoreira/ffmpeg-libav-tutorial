@@ -503,39 +503,39 @@ LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
 LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 ```
 
-## Chapter 2 - remuxing
+## 챕터 2 - 리먹싱 (remuxing)
 
-Remuxing is the act of changing from one format (container) to another, for instance, we can change a [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) video to a [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) one without much pain using FFmpeg:
+Remuxing은 하나의 포맷 (컨테이너)에서 다른 것으로 변경하는 행위입니다. 예를들면, 우리는 FFmpeg을 쓰면 별로 어렵지 않게 [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) 비디오를 [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream)로 변경할 수 있습니다:
 
 ```bash
 ffmpeg input.mp4 -c copy output.ts
 ```
 
-It'll demux the mp4 but it won't decode or encode it (`-c copy`) and in the end, it'll mux it into a `mpegts` file. If you don't provide the format `-f` the ffmpeg will try to guess it based on the file's extension.
+이것은 mp4를 demux하지만 디코딩이나 인코딩은 하지 않을 것입니다 (`-c copy`) 그리고는 결국 `mpegts` 파일로 mux할 것입니다. 만약 포맷을 의미하는 `-f`를 제공하지 않으면 ffmpeg은 파일 확장자를 기반으로 포맷을 추측하려고 할 것입니다.
 
-The general usage of FFmpeg or the libav follows a pattern/architecture or workflow:
-* **[protocol layer](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - it accepts an `input` (a `file` for instance but it could be a `rtmp` or `HTTP` input as well)
-* **[format layer](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - it `demuxes` its content, revealing mostly metadata and its streams
-* **[codec layer](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - it `decodes` its compressed streams data <sup>*optional*</sup>
-* **[pixel layer](https://ffmpeg.org/doxygen/trunk/group__lavfi.html)** - it can also apply some `filters` to the raw frames (like resizing)<sup>*optional*</sup>
+FFmpeg 혹은 libav의 일반적인 사용법은 아래 패턴/아키텍처 또는 워크플로우를 따릅니다: 
+* **[프로토콜 레이어](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - `input`을 받음 (예를들면 `file`이지만 `rtmp` 또는 `HTTP` 입력도 가능).
+* **[포맷 레이어](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - 컨텐츠를 `demuxes`, 대부분 메타데이터와 스트림을 열어봄
+* **[코덱 레이어](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - 압축된 스트림 데이터를 `decodes` <sup>*optional*</sup>
+* **[픽셀 레이어](https://ffmpeg.org/doxygen/trunk/group__lavfi.html)** - raw 프레임에 대해 (리사이징 같은) `filters`를 적용할 수도 있음 <sup>*optional*</sup>
 * and then it does the reverse path
-* **[codec layer](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - it `encodes` (or `re-encodes` or even `transcodes`) the raw frames<sup>*optional*</sup>
-* **[format layer](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - it `muxes` (or `remuxes`) the raw streams (the compressed data)
-* **[protocol layer](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - and finally the muxed data is sent to an `output` (another file or maybe a network remote server)
+* **[코덱 레이어](https://ffmpeg.org/doxygen/trunk/group__libavc.html)** - raw 프레임을 `encodes` (또는 `re-encodes` 혹은 `transcodes` 까지도) <sup>*optional*</sup>
+* **[포맷 레이어](https://ffmpeg.org/doxygen/trunk/group__libavf.html)** - raw 스트림 (압축된 데이터)를 `muxes` (또는 `remuxes`)
+* **[프로토콜 레이어](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - 그리고 마지막으로 muxed된 데이터를 `output`으로 전송 (또다른 파일 혹은 네트워크 원격 서버일 수도 있음)
 
 ![ffmpeg libav workflow](/img/ffmpeg_libav_workflow.jpeg)
-> This graph is strongly inspired by [Leixiaohua's](http://leixiaohua1020.github.io/#ffmpeg-development-examples) and [Slhck's](https://slhck.info/ffmpeg-encoding-course/#/9) works.
+> 이 그래프는 [Leixiaohua's](http://leixiaohua1020.github.io/#ffmpeg-development-examples)와 [Slhck's](https://slhck.info/ffmpeg-encoding-course/#/9)의 작업으로부터 큰 영감을 받은 것입니다.
 
-Now let's code an example using libav to provide the same effect as in `ffmpeg input.mp4 -c copy output.ts`.
+자 이제 `ffmpeg input.mp4 -c copy output.ts` 와 동일한 효과를 제공할 수 있도록 libav 를 이용한 예제를 하나 구현해봅시다.
 
-We're going to read from an input (`input_format_context`) and change it to another output (`output_format_context`).
+입력 (`input_format_context`) 으로부터 읽고 이것을 다른 출력 (`output_format_context`) 으로 변환해보겠습니다.
 
 ```c
 AVFormatContext *input_format_context = NULL;
 AVFormatContext *output_format_context = NULL;
 ```
 
-We start doing the usually allocate memory and open the input format. For this specific case, we're going to open an input file and allocate memory for an output file.
+일반적으로 메모리 할당을 시작하고 입력 포맷을 열겠습니다. 이번같은 특정한 경우에는, 입력 파일을 열고나서 출력 파일을 위한 메모리를 할당하겠습니다. 
 
 ```c
 if ((ret = avformat_open_input(&input_format_context, in_filename, NULL, NULL)) < 0) {
@@ -555,14 +555,14 @@ if (!output_format_context) {
 }
 ```
 
-We're going to remux only the video, audio and subtitle types of streams so we're holding what streams we'll be using into an array of indexes.
+비디오, 오디오, 자막 타입의 스트림만 remux할 것이므로 사용하게 될 스트림들은 인덱스의 배열에 저장할 것입니다.
 
 ```c
 number_of_streams = input_format_context->nb_streams;
 streams_list = av_mallocz_array(number_of_streams, sizeof(*streams_list));
 ```
 
-Just after we allocated the required memory, we're going to loop throughout all the streams and for each one we need to create new out stream into our output format context, using the [avformat_new_stream](https://ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827) function. Notice that we're marking all the streams that aren't video, audio or subtitle so we can skip them after.
+필요한만큼의 메모리를 할당한 후에는, 모든 스트림에 대해 루프를 돌면서 각각에 대해 [avformat_new_stream](https://ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827) 함수를 이용해서 출력 포맷 컨텍스트에 새로운 출력 스트림을 생성해야합니다. 비디오, 오디오, 자막이 아닌 모든 스트림들에 대해서는 마킹을 하고 있어서 나중에 이것들은 스킵할 수 있습니다.
 
 ```c
 for (i = 0; i < input_format_context->nb_streams; i++) {
@@ -590,7 +590,7 @@ for (i = 0; i < input_format_context->nb_streams; i++) {
 }
 ```
 
-Now we can create the output file.
+이제 출력 파일을 생성할 수 있습니다.
 
 ```c
 if (!(output_format_context->oformat->flags & AVFMT_NOFILE)) {
@@ -608,7 +608,7 @@ if (ret < 0) {
 }
 ```
 
-After that, we can copy the streams, packet by packet, from our input to our output streams. We'll loop while it has packets (`av_read_frame`), for each packet we need to re-calculate the PTS and DTS to finally write it (`av_interleaved_write_frame`) to our output format context.
+그런 후에, 입력으로부터 스트림을 패킷 하나 하나씩 출력 스트림으로 복사합니다. 패킷이 있는 동안 (`av_read_frame`) 반복하면서, 각 패킷에 대해 PTS와 DTS를 다시 계산해야하고 이것을 최종적으로 출력 포맷 컨텍스트에 (`av_interleaved_write_frame`) 씁니다.
 
 ```c
 while (1) {
@@ -640,19 +640,19 @@ while (1) {
 }
 ```
 
-To finalize we need to write the stream trailer to an output media file with [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13) function.
+마무리하기 위해 [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13) 함수를 이용해서 스트림 트레일러(trailer)를 출력 미디어 파일에 씁니다.
 
 ```c
 av_write_trailer(output_format_context);
 ```
 
-Now we're ready to test it and the first test will be a format (video container) conversion from a MP4 to a MPEG-TS video file. We're basically making the command line `ffmpeg input.mp4 -c copy output.ts` with libav.
+이제 테스트할 준비가 되었습니다. 첫번째 테스트는 MP4에서 MPEG-TS 비디오 파일로의 포맷 (비디오 컨테이너) 변환입니다. 우리는 기본적으로 `ffmpeg input.mp4 -c copy output.ts` 명령을 libav를 이용해 만든 것입니다.
 
 ```bash
 make run_remuxing_ts
 ```
 
-It's working!!! don't you trust me?! you shouldn't, we can check it with `ffprobe`:
+동작합니다!!! 절 믿지 않았나요?! 그러시면 안되죠, `ffprobe`로 한번 확인해보겠습니다:
 
 ```bash
 ffprobe -i remuxed_small_bunny_1080p_60fps.ts
@@ -667,19 +667,19 @@ Input #0, mpegts, from 'remuxed_small_bunny_1080p_60fps.ts':
     Stream #0:1[0x101]: Audio: ac3 ([129][0][0][0] / 0x0081), 48000 Hz, 5.1(side), fltp, 320 kb/s
 ```
 
-To sum up what we did here in a graph, we can revisit our initial [idea about how libav works](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-libav-architecture) but showing that we skipped the codec part.
+우리가 했던 것을 그래프로 정리하기 위해, 초 [libav의 동작 방식에 대한 아이디어](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-li기bav-architecture) 를 다시 한번 살펴보면 코덱 부분만 건너뛴걸 볼 수 있습니다.
 
 ![remuxing libav components](/img/remuxing_libav_components.png)
 
-Before we end this chapter I'd like to show an important part of the remuxing process, **you can pass options to the muxer**. Let's say we want to delivery [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding) format for that matter we need to use [fragmented mp4](https://stackoverflow.com/a/35180327) (sometimes referred as `fmp4`) instead of MPEG-TS or plain MPEG-4.
+이 챕터를 끝내기 전에 리먹싱(remuxing) 프로세스의 중요한 부분을 보여드리고자 합니다, **muxer에 옵션을 줄 수 있다**는 것입니다. 만약에 전송을 [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding) 포맷을 하고 싶다고 한다면 MPEG-TS나 기본 MPEG-4 대신 (`fmp4`라고 부르는) [fragmented mp4](https://stackoverflow.com/a/35180327) 를 사용해야합니다.
 
-With the [command line we can do that easily](https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#Fragmenting).
+[명령으로는 쉽게 이렇게 할 수 있습니다](https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#Fragmenting).
 
 ```
 ffmpeg -i non_fragmented.mp4 -movflags frag_keyframe+empty_moov+default_base_moof fragmented.mp4
 ```
 
-Almost equally easy as the command line is the libav version of it, we just need to pass the options when write the output header, just before the packets copy.
+libav 버전도 명령줄 만큼이나 거의 똑같이 쉽습니다, 패킷 복사 바로 전에 출력 헤더를 쓸때 해당 옵션을 넘겨주기만 하면 됩니다. 
 
 ```c
 AVDictionary* opts = NULL;
@@ -687,17 +687,17 @@ av_dict_set(&opts, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
 ret = avformat_write_header(output_format_context, &opts);
 ```
 
-We now can generate this fragmented mp4 file:
+이제 이 fragmented mp4 파일을 생성할 수 있습니다:
 
 ```bash
 make run_remuxing_fragmented_mp4
 ```
 
-But to make sure that I'm not lying to you. You can use the amazing site/tool [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) or the site [http://mp4parser.com/](http://mp4parser.com/) to see the differences, first load up the "common" mp4.
+제가 여러분께 거짓말하고 있지 않다는걸 보여드리기 위해, 아주 훌륭한 사이트/툴인 [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) 또는 [http://mp4parser.com/](http://mp4parser.com/) 사이트를 이용해 차이를 확인해볼 수 있습니다. 일단 "common" mp4 파일을 로드해보세요. 
 
 ![mp4 boxes](/img/boxes_normal_mp4.png)
 
-As you can see it has a single `mdat` atom/box, **this is place where the video and audio frames are**. Now load the fragmented mp4 to see which how it spreads the `mdat` boxes.
+보시다시피 단 하나의 `mdat` atom/box 가 있습니다, **여기에 비디오와 오디오 프레임이 담겨있습니다**. 이번엔 fragmented mp4 를 로드해서 `mdat` boxes 가 어떻게 퍼져있는지를 보시겠습니다.
 
 ![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
 
