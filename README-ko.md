@@ -298,8 +298,7 @@ FFmpeg는 우리의 프로그램에 통합될 수 있는 [여러 라이브러리
 > ```bash
 > $ make run_hello
 > ```
-
-좀 상세한 부분은 넘어가겠습니다, 그러나 걱정하진 마세요: [소스 코드는 github에 있습니다](/0_hello_world.c). 
+> 좀 상세한 부분은 넘어가겠습니다, 그러나 걱정하진 마세요: [소스 코드는 github에 있습니다](/0_hello_world.c). 
 
 포맷 (컨테이너)에 관한 정보를 들고 있는 [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 컴포넌트에게 메모리를 할당해보겠습니다.
 
@@ -701,25 +700,23 @@ make run_remuxing_fragmented_mp4
 
 ![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
 
-## Chapter 3 - transcoding
+## 챕터 3 - 트랜스코딩 (transcoding)
 
-> #### TLDR; show me the [code](/3_transcoding.c) and execution.
+> #### TLDR; [코드](/3_transcoding.c)랑 실행을 보여주세요.
 > ```bash
 > $ make run_transcoding
 > ```
-> We'll skip some details, but don't worry: the [source code is available at github](/3_transcoding.c).
+> 좀 상세한 부분은 넘어가겠습니다, 그러나 걱정하진 마세요: [소스 코드는 github에 있습니다](/3_transcoding.c). 
 
-
-
-In this chapter, we're going to create a minimalist transcoder, written in C, that can convert videos coded in H264 to H265 using **FFmpeg/libav** library specifically [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, and libavutil.
+이번 챕터에서는 아주 최소한의 작성된 트랜스코더를 만들어보겠습니다, C로 작성할 것이고, 이것으로 H264로 인코딩된 비디오를 **FFmpeg/libav** 라이브러리를, 특히 [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, libavutil 들을 이용해서 H265로 변환할 수 있을겁니다.
 
 ![media transcoding flow](/img/transcoding_flow.png)
 
-> _Just a quick recap:_ The [**AVFormatContext**](https://www.ffmpeg.org/doxygen/trunk/structAVFormatContext.html) is the abstraction for the format of the media file, aka container (ex: MKV, MP4, Webm, TS). The [**AVStream**](https://www.ffmpeg.org/doxygen/trunk/structAVStream.html) represents each type of data for a given format (ex: audio, video, subtitle, metadata). The [**AVPacket**](https://www.ffmpeg.org/doxygen/trunk/structAVPacket.html) is a slice of compressed data obtained from the `AVStream` that can be decoded by an [**AVCodec**](https://www.ffmpeg.org/doxygen/trunk/structAVCodec.html) (ex: av1, h264, vp9, hevc) generating a raw data called [**AVFrame**](https://www.ffmpeg.org/doxygen/trunk/structAVFrame.html).
+> _빠르게 복습해보면:_ [**AVFormatContext**](https://www.ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 는 컨테이너 (ex: MKV, MP4, Webm, TS) 같은 미디어 파일 포맷에 대한 추상화 구조체입니다. [**AVStream**](https://www.ffmpeg.org/doxygen/trunk/structAVStream.html) 는 주어진 포맷 (ex: 오디오, 비디오, 자막, 메타데이터)에 대한 각 데이터 유형을 나타냅니다. [**AVPacket**](https://www.ffmpeg.org/doxygen/trunk/structAVPacket.html) 은 `AVStream` 으로부터 얻어진 압축된 데이터의 조각입니다. 그리고 이것은 [**AVCodec**](https://www.ffmpeg.org/doxygen/trunk/structAVCodec.html) (ex: av1, h264, vp9, hevc)에 의해 디코딩되어 [**AVFrame**](https://www.ffmpeg.org/doxygen/trunk/structAVFrame.html) 라고 불리는 raw 데이터로 만들어집니다.
 
-### Transmuxing
+### 트랜스먹싱 (Transmuxing)
 
-Let's start with the simple transmuxing operation and then we can build upon this code, the first step is to **load the input file**.
+간단한 트랜스먹싱 작업을 시작해봅시다. 그리고나서 이 코드 기반으로 빌드를 할 수 있습니다, 첫번째 단계는 **입력 파일을 로드하기**입니다.
 
 ```c
 // Allocate an AVFormatContext
@@ -730,9 +727,9 @@ avformat_open_input(avfc, in_filename, NULL, NULL);
 avformat_find_stream_info(avfc, NULL);
 ```
 
-Now we're going to set up the decoder, the `AVFormatContext` will give us access to all the `AVStream` components and for each one of them, we can get their `AVCodec` and create the particular `AVCodecContext` and finally we can open the given codec so we can proceed to the decoding process.
+이제 디코더를 설정할 것인데, `AVFormatContext`가 모든 `AVStream` 컴포넌트에 접근할 수 있게 해줄 것입니다. 그리고 각각의 스트림에 대해서, `AVCodec`을 가져와서 특정 `AVCodecContext`를 생성합니다. 그리고 마지막으로 주어진 코덱을 열게되고 디코딩 프로세스를 수행할 수 있습니다.
 
->  The [**AVCodecContext**](https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html) holds data about media configuration such as bit rate, frame rate, sample rate, channels, height, and many others.
+> [**AVCodecContext**](https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html)는 비트 레이트, 프레임 속도, 샘플 레이드, 채널, 높이 등과 같은 미디어 설정에 대한 데이터를 가지고 있습니다.
 
 ```c
 for (int i = 0; i < avfc->nb_streams; i++)
@@ -745,9 +742,9 @@ for (int i = 0; i < avfc->nb_streams; i++)
 }
 ```
 
-We need to prepare the output media file for transmuxing as well, we first **allocate memory** for the output `AVFormatContext`. We create **each stream** in the output format. In order to pack the stream properly, we **copy the codec parameters** from the decoder.
+트랜스먹싱도 마찬가지로 출력 미디어 파일을 준비해둬야합니다, 우선 출력 `AVFormatContext`에 대해 **메모리를 할당**합니다. 이 출력 포맷에 **각 스트림**을 생성합니다. 스트림을 제대로 적재시키기 위해, 디코더로부터 **코덱 파라미터를 복사**합니다.
 
-We **set the flag** `AV_CODEC_FLAG_GLOBAL_HEADER` which tells the encoder that it can use the global headers and finally we open the output **file for write** and persist the headers.
+인코더가 글로벌 헤더를 사용할 수 있도록 지정하는 `AV_CODEC_FLAG_GLOBAL_HEADER` **플래그를 설정**합니다. 그리고 출력으로 **쓰기 위한 파일**을 열고 헤더를 저장합니다.
 
 ```c
 avformat_alloc_output_context2(&encoder_avfc, NULL, NULL, out_filename);
@@ -763,7 +760,7 @@ avformat_write_header(encoder->avfc, &muxer_opts);
 
 ```
 
-We're getting the `AVPacket`'s from the decoder, adjusting the timestamps, and write the packet properly to the output file. Even though the function `av_interleaved_write_frame` says "write frame" we are storing the packet. We finish the transmuxing process by writing the stream trailer to the file.
+디코더로부터 `AVPacket`을 얻어서, 타임스탬프를 조정하고, 패킷을 출력 파일에 제대로 씁니다. `av_interleaved_write_frame` 이 함수 이름이 "write frame"라고 말하긴 하지만 이것은 패킷을 저장하는 것입니다. 이제 파일에 스트림 트레일러를 쓰면서 트랜스먹싱 프로세스를 마무리합니다. 
 
 ```c
 AVFrame *input_frame = av_frame_alloc();
@@ -778,17 +775,23 @@ while (av_read_frame(decoder_avfc, input_packet) >= 0)
 av_write_trailer(encoder_avfc);
 ```
 
-### Transcoding
+### 트랜스코딩 (Transcoding)
 
-The previous section showed a simple transmuxer program, now we're going to add the capability to encode files, specifically we're going to enable it to transcode videos from `h264` to `h265`.
+이전 섹션에서 간단한 트랜스먹서 프로그램을 봤습니다, 이번엔 여기에 인코딩을 할 수 있는 기능을 추가해보겠습니다. 특히, `h264`에서 `h265`로 비디오를 트랜스코딩할 수 있게 하겠습니다.
 
-After we prepared the decoder but before we arrange the output media file we're going to set up the encoder.
+디코더를 준비한 후, 그리고 출력 미디어 파일을 다루기 전에 인코더를 설정할 것입니다.
+
+* 인코더에 비디오 `AVStream`를 생성합니다, [`avformat_new_stream`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827)
+* `libx265`라고 하는 `AVCodec`을 사용합니다, [`avcodec_find_encoder_by_name`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__encoding.html#gaa614ffc38511c104bdff4a3afa086d37)
+* 생성한 코덱을 기반으로 `AVCodecContext`를 생성합니다,[`avcodec_alloc_context3`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#gae80afec6f26df6607eaacf39b561c315)
+* 트랜스코딩 세션에 대해 기본적인 속성들을 설정합니다, 그리고
+* 코덱을 열고 컨텍스트에서 스트림으로 파라미터를 복사합니다.
 
 * Create the video `AVStream` in the encoder, [`avformat_new_stream`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827)
 * Use the `AVCodec` called `libx265`, [`avcodec_find_encoder_by_name`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__encoding.html#gaa614ffc38511c104bdff4a3afa086d37)
 * Create the `AVCodecContext` based in the created codec, [`avcodec_alloc_context3`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#gae80afec6f26df6607eaacf39b561c315)
 * Set up basic attributes for the transcoding session, and
-* Open the codec and copy parameters from the context to the stream. [`avcodec_open2`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) and [`avcodec_parameters_from_context`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga0c7058f764778615e7978a1821ab3cfe)
+* Open the codec and copy parameters from the context to the stream. [`avcodec_open2`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d), [`avcodec_parameters_from_context`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga0c7058f764778615e7978a1821ab3cfe)
 
 ```c
 AVRational input_framerate = av_guess_frame_rate(decoder_avfc, decoder_video_avs, NULL);
@@ -821,15 +824,15 @@ avcodec_open2(sc->video_avcc, sc->video_avc, NULL);
 avcodec_parameters_from_context(sc->video_avs->codecpar, sc->video_avcc);
 ```
 
-We need to expand our decoding loop for the video stream transcoding:
+비디오 스트림의 트랜스코딩을 위해서 우리의 디코딩 루프를 확장해야합니다.
 
-* Send the empty `AVPacket` to the decoder, [`avcodec_send_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3)
-* Receive the uncompressed `AVFrame`, [`avcodec_receive_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c)
-* Start to transcode this raw frame,
-* Send the raw frame, [`avcodec_send_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga9395cb802a5febf1f00df31497779169)
-* Receive the compressed, based on our codec, `AVPacket`, [`avcodec_receive_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga5b8eff59cf259747cf0b31563e38ded6)
-* Set up the timestamp, and [`av_packet_rescale_ts`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__packet.html#gae5c86e4d93f6e7aa62ef2c60763ea67e)
-* Write it to the output file. [`av_interleaved_write_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga37352ed2c63493c38219d935e71db6c1)
+* 디코더에 빈 `AVPacket`를 전송합니다, [`avcodec_send_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3)
+* 압축이 해제된 `AVFrame`를 받아옵니다, [`avcodec_receive_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c)
+* 이 raw 프레임의 트랜스코딩을 시작합니다,
+* raw 프레임을 (인코더에) 보내고, [`avcodec_send_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga9395cb802a5febf1f00df31497779169)
+* 코덱에 맞게 압축된 `AVPacket`을 받아옵니다, [`avcodec_receive_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga5b8eff59cf259747cf0b31563e38ded6)
+* 타임스탬프를 설정하고, [`av_packet_rescale_ts`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__packet.html#gae5c86e4d93f6e7aa62ef2c60763ea67e)
+* 패킷을 출력 파일에 씁니다. [`av_interleaved_write_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga37352ed2c63493c38219d935e71db6c1)
 
 ```c
 AVFrame *input_frame = av_frame_alloc();
@@ -880,7 +883,7 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
 
 ```
 
-We converted the media stream from `h264` to `h265`, as expected the `h265` version of the media file is smaller than the `h264` however the [created program](/3_transcoding.c) is capable of:
+아시다시피 `h265` 버전의 미디어 파일이 `h264`보다 작기 때문에 미디어 스트림을 `h264`에서 `h265`로 변환했습니다. 하지만 [작성한 프로그램](/3_transcoding.c)은 다음을 수행할 수 있습니다:
 
 ```c
 
@@ -950,4 +953,4 @@ We converted the media stream from `h264` to `h265`, as expected the `h265` vers
 
 ```
 
-> Now, to be honest, this was [harder than I thought](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54) it'd be and I had to dig into the [FFmpeg command line source code](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54#issuecomment-570746749) and test it a lot and I think I'm missing something because I had to enforce `force-cfr` for the `h264` to work and I'm still seeing some warning messages like `warning messages (forced frame type (5) at 80 was changed to frame type (3))`.
+> 자 이제 솔직히 말하면, 이거 [내가 생각했던 것보다 더 삽질](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54)했습니다. [FFmpeg 명령줄 소스코드](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54#issuecomment-570746749)를 파봐야했고 테스트도 엄청 돌려봤습니다. 그리고 `force-cfr`을 강제로 넣어줘야지만 `h264`가 작용하고 `warning messages (forced frame type (5) at 80 was changed to frame type (3))` 같은 경고 메시지도 여전히 나고 있기 때문에 제가 뭔가 놓치고 있는 것 같습니다.
