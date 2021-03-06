@@ -6,32 +6,32 @@
 여기서 사용된 대부분의 코드는 C로 되어있습니다. **하지만 걱정하지 마세요**: 당신도 쉽게 이해할 것이고 선호하는 언어에도 적용하실 수 있을겁니다.
 FFmpeg libav는 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav)와 같은 다양한 언어로 된 많은 bindings을 제공합니다. 만약 사용하려는 언어에 그것이 없다면 `ffi`를 통해서도 지원할 수 있습니다. ([Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 예시)
 
-우리는 비디오와 오디오, 코덱, 컨테이너가 무엇인지에 대해 빠르게 학습한 후에 `FFmpeg` 명령을 어떻게 사용하는지 대해서 파헤쳐보고 마지막으로 코드도 작성해볼 것입니다, [삽질하면서 FFmpeg libav 배우기](#learn-ffmpeg-libav-the-hard-way) 섹션으로 바로 넘어가셔도 좋습니다.
+우리는 비디오와 오디오, 코덱, 컨테이너가 무엇인지에 대해 빠르게 학습한 후에 `FFmpeg` 명령을 어떻게 사용하는지 대해서 파헤쳐보고 마지막으로 코드도 작성해볼 것입니다, [삽질하면서 FFmpeg libav 배우기](#삽질하면서-FFmpeg-libav-배우기) 섹션으로 바로 넘어가셔도 좋습니다.
 
 혹자는 인터넷 비디오 스트리밍이 전통적인 TV의 미래라고 이야기하기도 합니다. 어떻게 되든 FFmpeg은 공부해둘만한 가치가 있는 것입니다.
 
 __목차__
 
 * [소개](#intro)
-  * [비디오 - 당신이 무엇을 보는지!](#video---what-you-see)
-  * [오디오 - 당신이 무엇을 듣는지!](#audio---what-you-listen)
-  * [코덱 - 데이터를 줄이기](#codec---shrinking-data)
-  * [컨테이너 - 오디오와 비디오의 안식처](#container---a-comfy-place-for-audio-and-video)
-* [FFmpeg - 커맨드 라인](#ffmpeg---command-line)
-  * [FFmpeg 커맨드 라인 도구 101](#ffmpeg-command-line-tool-101)
-* [공통 비디오 연산](#common-video-operations)
-  * [트랜스코딩 (Transcoding)](#transcoding)
-  * [트랜스먹싱 (Transmuxing)](#transmuxing)
-  * [트랜스레이팅 (Transrating)](#transrating)
-  * [트랜스사이징 (Transsizing)](#transsizing)
-  * [보너스: 적용형 스트리밍 (Adaptive Streaming)](#bonus-round-adaptive-streaming)
-  * [더 들어가기](#going-beyond)
-* [삽질하면서 FFmpeg libav 배우기](#learn-ffmpeg-libav-the-hard-way)
-  * [챕터 0 - 악명 높은 hello world](#chapter-0---the-infamous-hello-world)
-    * [FFmpeg libav 아키텍처](#ffmpeg-libav-architecture)
-  * [챕터 1 - 타이밍 (timing)](#chapter-1---syncing-audio-and-video)
-  * [챕터 2 - 리먹싱 (remuxing)](#chapter-2---remuxing)
-  * [첩터 3 - 트랜스코딩 (transcoding)](#chapter-3---transcoding)
+  * [비디오 - 당신이 무엇을 보는지!](#비디오---당신이-무엇을-보는지!)
+  * [오디오 - 당신이 무엇을 듣는지!](#오디오---당신이-무엇을-듣는지!)
+  * [코덱 - 데이터를 줄이기](#코덱---데이터를-줄이기)
+  * [컨테이너 - 오디오와 비디오의 안식처](#[컨테이너---오디오와-비디오의-안식처)
+* [FFmpeg - 명령줄 도구](#FFmpeg---명령줄-도구)
+  * [FFmpeg 명령줄 도구 101](#FFmpeg-명령줄-도구-101)
+* [공통 비디오 연산](#공통-비디오-연산)
+  * [트랜스코딩 (Transcoding)](#트랜스코딩-(Transcoding))
+  * [트랜스먹싱 (Transmuxing)](#트랜스먹싱-(Transmuxing))
+  * [트랜스레이팅 (Transrating)](#트랜스레이팅-(Transrating))
+  * [트랜스사이징 (Transsizing)](#트랜스사이징-(Transsizing))
+  * [보너스: 적응형 스트리밍 (Adaptive Streaming)](#보너스:-적응형-스트리밍-(Adaptive-Streaming))
+  * [더 들어가기](#더-들어가기)
+* [삽질하면서 FFmpeg libav 배우기](#삽질하면서-FFmpeg-libav-배우기)
+  * [챕터 0 - 악명 높은 hello world](#챕터-0---악명-높은-hello-world)
+    * [FFmpeg libav 아키텍처](#FFmpeg-libav-아키텍처)
+  * [챕터 1 - 타이밍 (timing)](#챕터-1---오디오와-비디오-동기화)
+  * [챕터 2 - 리먹싱 (remuxing)](#챕터-2---리먹싱-(remuxing))
+  * [챕터 3 - 트랜스코딩 (transcoding)](#챕터-3---트랜스코딩-(transcoding))
 
 # 소개
 
@@ -205,7 +205,7 @@ $ ffmpeg \
 bunny_1080p_60fps_transsizing_480.mp4
 ```
 
-## 보너스: 적응형 스트리밍
+## 보너스: 적응형 스트리밍 (Adaptive Streaming)
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
@@ -441,7 +441,7 @@ voilà! 이제 우리는 2MB짜리 흑백 이미지를 얻어냈습니다:
 
 > **플레이어가 되세요** - 신규 MSE 비디오 플레이어를 작성 중인 젊은 JS 개발자
 
-[트랜스코딩 예제 코드](#chapter-2---transcoding)로 넘어가기 전에 **타이밍** 혹은 어떻게 비디오 플레이어가 하나의 프레임을 제시간에 재생해야하는지에 대해서 이야기해봅시다.
+[트랜스코딩 예제 코드](#챕터-3---트랜스코딩-(transcoding))로 넘어가기 전에 **타이밍** 혹은 어떻게 비디오 플레이어가 하나의 프레임을 제시간에 재생해야하는지에 대해서 이야기해봅시다.
 
 지난 예제에서, 우리는 이렇게 보이는 프레임들을 저장했습니다.
 
