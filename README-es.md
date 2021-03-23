@@ -16,32 +16,32 @@ Algunas personas solían decir que la transmisión de video por internet era el 
 __Tabla de Contenido__
 
 * [Intro](#intro)
-  * [video - ¡lo que ves!](#video - ¡lo que ves!)
-  * [audio - ¡lo que escuchas!](#audio - ¡lo que escuchas!)
-  * [códec - encogiendo datos](#códec - encogiendo datos)
-  * [Contenedor - un lugar cómodo para audio y video](#Contenedor - un lugar cómodo para audio y video)
-* [FFmpeg - línea de comandos](#FFmpeg - línea de comandos)
-  * [FFmpeg herramienta de línea de comandos 101](#FFmpeg herramienta de línea de comandos 101)
-* [Operaciones de video comunes](#Operaciones de video comunes)
+  * [video - ¡lo que ves!](#video---¡lo-que-ves!)
+  * [audio - ¡lo que escuchas!](#audio---¡lo-que-escuchas!)
+  * [códec - comprimiendo datos](#códec---comprimiendo-datos)
+  * [Contenedor - un lugar cómodo para audio y video](#Contenedor---un-lugar-cómodo-para-audio-y-video)
+* [FFmpeg - línea de comandos](#FFmpeg---línea-de-comandos)
+  * [FFmpeg herramienta de línea de comandos 101](#FFmpeg-herramienta-de-línea-de-comandos-101)
+* [Operaciones de video comunes](#Operaciones-de-video-comunes)
   * [Transcoding](#transcoding)
   * [Transmuxing](#transmuxing)
   * [Transrating](#transrating)
   * [Transsizing](#transsizing)
-  * [Round Bonus: Transmisión adaptativa](#Round Bonus: Transmisión adaptativa)
-  * [Ve más allá](#Ve más allá)
-* [Aprende FFmpeg libav de la manera difícil](#Aprende FFmpeg libav de la manera difícil)
-  * [Capítulo 0 - El infame hola mundo](#Capítulo 0 - El infame hola mundo)
-    * [Arquitectura de FFmpeg libav](#Arquitectura de FFmpeg libav)
-  * [Capítulo 1 - timing](#Capítulo 1 - sincronizando audio y video)
-  * [Capítulo 2 - remuxing](#Capítulo 2 - remuxing)
-  * [Capítulo 3 - transcoding](#Capítulo 3 - transcoding)
+  * [Round Bonus:  Transmisión adaptativa](#Round-Bonus-Transmisión-adaptativa)
+  * [Ve más allá](#Ve-más-allá)
+* [Aprende FFmpeg libav de la manera difícil](#Aprende-FFmpeg-libav-de-la-manera-difícil)
+  * [Capítulo 0 - El infame hola mundo](#Capítulo-0---El-infame-hola-mundo)
+    * [Arquitectura de FFmpeg libav](#Arquitectura-de-FFmpeg-libav)
+  * [Capítulo 1 - timing](#Capítulo-1---sincronizando-audio-y-video)
+  * [Capítulo 2 - remuxing](#Capítulo-2---remuxing)
+  * [Capítulo 3 - transcoding](#Capítulo-3---transcoding)
 
 # Intro
 
 ## Video - ¡lo que ves!
 
 Si tu tienes una secuencia de imágenes en serie y las cambias a cierta frecuencia (digamos [24 imagenes por segundo](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), crearías una [ilusion de movimiento](https://en.wikipedia.org/wiki/Persistence_of_vision).
-En resúmen, esta es una muy básica idea detrás de un video: **una serie de imágenes / cuadros, corriendo a una velocidad dada**.
+En resumen, esta es una muy básica idea detrás de un video: **una serie de imágenes / cuadros, corriendo a una velocidad dada**.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
 
