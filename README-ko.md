@@ -917,7 +917,7 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
   sp.codec_priv_key = "x264-params";
   sp.codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
   sp.muxer_opt_key = "movflags";
-  sp.muxer_opt_value = "frag_keyframe+empty_moov+default_base_moof";
+  sp.muxer_opt_value = "frag_keyframe+empty_moov+delay_moov+default_base_moof";
 
   /*
    * H264 -> H264 (fixed gop)
