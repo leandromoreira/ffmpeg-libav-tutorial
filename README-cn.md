@@ -8,7 +8,7 @@
 
 这里大部分的代码都是 c 写的，**但是不用担心**：你可以非常容易的理解它。
 
-FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，即使你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
+FFmpeg libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，即使你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
 
 我将会快速的教会大家认识什么是视频、音频、编解码和容器，然后我们尝试使用 FFmpeg 命令行，最终用代码实现一些功能。当然你可以随时跳过这个部分 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
 
