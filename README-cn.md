@@ -127,7 +127,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # 全局参数
--c:a libfdk_aac -c:v libx264 \ # 输入选项
+-re -stream_loop -1 \ # 输入选项
 -i bunny_1080p_60fps.mp4 \ # 输入内容
 -c:v libvpx-vp9 -c:a libvorbis \ # 输出选项
 bunny_1080p_60fps_vp9.webm # 输出内容
