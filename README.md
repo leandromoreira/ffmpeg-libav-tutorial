@@ -167,12 +167,12 @@ bunny_1080p_60fps_h265.mp4
 
 **Why?** sometimes some devices (TVs, smartphones, console and etc) doesn't support X but Y and sometimes newer containers provide modern required features.
 
-**How?** converting a `mp4` to a `webm`.
+**How?** converting a `mp4` to a `ts`.
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
 -c copy \ # just saying to ffmpeg to skip encoding
-bunny_1080p_60fps.webm
+bunny_1080p_60fps.ts
 ```
 
 ## Transrating
