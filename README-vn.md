@@ -12,41 +12,45 @@ Một vài người thường nói phát trực tuyến video trên Internet là
 
 __Mục lục__
 
-* [Giới thiệu](#Giới-thiệu)
-  * [video - điều bạn thấy!](#video---điều-bạn-thấy)
-  * [audio - điều bạn nghe!](#audio---what-you-líten)
-  * [codec - nén dữ liệu](#codec---shrinking-data)
-  * [container - nơi lưu trữ chung video và audio](#container---a-comfy-place-for-audio-and-video)
-* [FFmpeg - CLI](#ffmpeg---command-line)
-  * [bộ công cụ câu lệnh FFmpeg 101](#ffmpeg-command-line-tool-101)
-* [Những hành động xử lý video phổ biến](#common-video-operations)
-  * [Transcoding](#transcoding)
-  * [Transmuxing](#transmuxing)
-  * [Transrating](#transrating)
-  * [Transsizing](#transsizing)
-  * [Mở rộng: adaptive-streaming](#bonus-round-adaptive-streaming)
-  * [Hơn thế nữa](#going-beyond)
-* [Tìm hiểu thư viện FFmpeg libav sâu hơn](#learn-ffmpeg-libav-the-hard-way)
-  * [Chapter 0 - Hello world nổi tiếng](#chapter-0---the-infamous-hello-world)
-    * [Kiến trúc thư viện FFmpeg libav](#ffmpeg-libav-architecture)
-  * [Chapter 1 - timing](#chapter-1---syncing-audio-and-video)
-  * [Chapter 2 - remuxing](#chapter-2---remuxing)
-  * [Chapter 3 - transcoding](#chapter-3---transcoding)
+- [Giới thiệu](#giới-thiệu)
+  - [Video - Điều bạn thấy!](#video---điều-bạn-thấy)
+  - [Audio - Điều bạn nghe!](#audio---điều-bạn-nghe)
+  - [Codec - Nén dữ liệu](#codec---nén-dữ-liệu)
+  - [Container - Định dạng tệp lưu trữ chung video và audio](#container---định-dạng-tệp-lưu-trữ-chung-video-và-audio)
+- [FFmpeg - Bộ công cụ dưới dạng câu lệnh](#ffmpeg---bộ-công-cụ-dưới-dạng-câu-lệnh)
+  - [Bộ công cụ câu lệnh FFmpeg 101](#bộ-công-cụ-câu-lệnh-ffmpeg-101)
+- [Những hành động xử lý video phổ biến](#những-hành-động-xử-lý-video-phổ-biến)
+  - [Chuyển đổi chuẩn nén - Transcoding](#chuyển-đổi-chuẩn-nén---transcoding)
+  - [Chuyển đổi định dạng tệp - Transmuxing](#chuyển-đổi-định-dạng-tệp---transmuxing)
+  - [Thay đổi tốc độ bit - Transrating](#thay-đổi-tốc-độ-bit---transrating)
+  - [Thay đổi độ phân giải - Transsizing](#thay-đổi-độ-phân-giải---transsizing)
+  - [Mở rộng: phát trực tuyến thích ứng (Adaptive-streaming)](#mở-rộng-phát-trực-tuyến-thích-ứng-adaptive-streaming)
+  - [Hơn thế nữa](#hơn-thế-nữa)
+- [Tìm hiểu thư viện FFmpeg libav sâu hơn](#tìm-hiểu-thư-viện-ffmpeg-libav-sâu-hơn)
+  - [Chapter 0 - Hello world nổi tiếng](#chapter-0---hello-world-nổi-tiếng)
+    - [Kiến trúc thư viện FFmpeg libav](#kiến-trúc-thư-viện-ffmpeg-libav)
+    - [Các yêu cầu](#các-yêu-cầu)
+    - [Chương 0 - lướt qua các dòng code](#chương-0---lướt-qua-các-dòng-code)
+  - [Chapter 1 - Đồng bộ audio và video](#chapter-1---đồng-bộ-audio-và-video)
+  - [Chapter 2 - Remuxing](#chapter-2---remuxing)
+  - [Chapter 3 - Transcoding](#chapter-3---transcoding)
+    - [Transmuxing](#transmuxing)
+    - [Transcoding](#transcoding)
   
 # Giới thiệu
 
-##video - điều bạn thấy!
+## Video - Điều bạn thấy!
 
 Nếu bạn có một chuỗi tuần tự các hình ảnh và thay đổi chúng ở một tần số đã biết (hãy ví dụ như [24 hình trên giây](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), bạn sẽ tạo ra [ảo giác về sự chuyển động](https://en.wikipedia.org/wiki/Persistence_of_vision).
-Tóm lại, đây là nguyên lý cơ bản đằng sau video: **một chuỗi các hình ảnh chạy với tốc độ đã biết**. 
+Tóm lại, đây là nguyên lý cơ bản đằng sau video: **một chuỗi các hình ảnh chạy với tốc độ cho trước**. 
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
 
 Zeitgenössische Illustration (1886)
 
-## audio - điều bạn nghe!
+## Audio - Điều bạn nghe!
 
-Mặc dù video tắt tiếng có thể mang đến rất nhiều cảm xúc, nhưng việc bổ sung thêm âm thanh sẽ mang lại nhiều trải nghiệm hứng khởi hơn.
+Mặc dù video không âm thanh có thể mang đến rất nhiều cảm xúc, nhưng việc bổ sung thêm âm thanh sẽ mang lại nhiều trải nghiệm hứng khởi hơn.
 
 Âm thanh là sự rung động lan truyền như sóng áp suất, thông qua không khí hoặc bất cứ phương tiện truyền dẫn khác, như khí gas, chất lỏng hoặc đất.
 
@@ -55,14 +59,14 @@ Mặc dù video tắt tiếng có thể mang đến rất nhiều cảm xúc, nh
 ![chuyển đổi tín hiệu tương tự âm thành sang tín hiệu số](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
 >[Nguồn](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
 
-## codec - nén dữ liệu
+## Codec - Nén dữ liệu
 
 > CODEC là một mạch điện tử hoặc phần mềm dùng để **nén hoặc giải nén dữ liệu video/audio kỹ thuật số.** Nó chuyển đổi dữ liệu video/audio số hoá nguyên thuỷ (chưa nén) sang định dạng nén hoặc ngược lại.
 > https://en.wikipedia.org/wiki/Video_codec
 
-Nhưng nếu chúng ta chọn đóng gói hàng triệu hình ảnh vào trong tệp tài liệu và gọi nó là một bộ phim, chúng ta có thể nhận được một tệp tài liệu khổng lồ. Hãy thử tính toán:
+Nhưng nếu chúng ta chọn đóng gói hàng triệu hình ảnh vào trong tệp tài liệu và gọi nó là một bộ phim, chúng ta có thể nhận được một tệp tài liệu khổng lồ. Hãy thử tính toán một chút:
 
-Giả sử chúng ta đang tạo một video với độ phân giải `1080 x 1920` (cao x rộng) và chúng ta dành `3 bytes` cho mỗi điểm ảnh (pixel - đơn vị nhỏ nhất của một màn hình) để mã hoá màu sắc (hoặc [màu sắc 24 bít](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), nó đại diện cho 16,777,216 màu sắc khác nhau), và video này chạy ở tốc độ `24 hình trên giây`, kéo dài `30 phút`.
+Giả sử chúng ta đang tạo một video với độ phân giải `1080 x 1920` (cao x rộng) và chúng ta dành `3 bytes` cho mỗi điểm ảnh (pixel - đơn vị nhỏ nhất của một màn hình) để mã hoá màu sắc (hoặc [màu sắc 24 bit](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), nó đại diện cho 16,777,216 màu sắc khác nhau), và video này chạy ở tốc độ `24 hình trên giây`, kéo dài `30 phút`.
 
 ```c
 toppf = 1080 * 1920 //tong_so_diem_anh_tren_mot_hinh
@@ -75,9 +79,9 @@ bo_nho_yeu_cau = tis * fps * toppf * cpp
 
 Video này sẽ yêu cầu xấp xỉ bộ nhớ `250.28GB` hoặc băng thông `1.11Gbps`! Đó là lý do tại sao chúng ta cần dùng [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
-## container -  nơi lưu trữ chung video và audio
+## Container - Định dạng tệp lưu trữ chung video và audio
 
-> Một container hay định dạng gói là một định dạng tập tin mà thông số của nó miêu tả những thành phần khác nhau của dữ liệu và thông tin cũng tồn tại như thế nào trong một tập tin máy tính.
+> Một container hay định dạng tệp là một định dạng tập tin mà thông số của nó miêu tả những thành phần khác nhau của dữ liệu và thông tin cũng tồn tại như thế nào trong một tập tin máy tính.
 > https://en.wikipedia.org/wiki/Digital_container_format
 
 Một **tệp tin đơn chứa tất cả các luồng dữ liệu** (bao gồm tất cả audio và video) và nó cũng cung cấp cơ chế đồng bộ và thông tin chung, như tựa đề, độ phân giải,...
@@ -86,7 +90,7 @@ Thông thường chúng ta có thể suy luận định dạng của tệp dữ 
 
 ![container](/img/container.png)
 
-# FFmpeg - CLI
+# FFmpeg - Bộ công cụ dưới dạng câu lệnh
 
 > Một giải pháp hoàn thiện, đa nền tảng để ghi lại, chuyển đổi và phát trực tuyến luồng audio và video.
 
@@ -100,11 +104,11 @@ $ ffmpeg -i input.mp4 output.avi
 ```
 
 Chúng ta chỉ thực hiện một bước **định dạng lại (remuxing)** ở đây, nghĩa là nó đang chuyển đổi từ định dạng container này sang một định dạng container khác.
-Về mặt kỹ thuật FFmpeg cũng có thể thực hiện thêm một bước chuyển đổi chuẩn nén nhưng chúng ta sẽ nói về nó sau.
+Về mặt kỹ thuật FFmpeg cũng có thể thực hiện thêm một bước chuyển đổi chuẩn nén (transcode) nhưng chúng ta sẽ nói về nó sau.
 
 ## Bộ công cụ câu lệnh FFmpeg 101
 
-FFmpeg có một trang [tài liệu](https://www.ffmpeg.org/ffmpeg.html) đã giải thích rõ ràng đầy đủ về nguyên lý hoạt động của nó. 
+FFmpeg có một trang chủ [tài liệu](https://www.ffmpeg.org/ffmpeg.html) đã giải thích rõ ràng đầy đủ về nguyên lý hoạt động của nó. 
 
 Ngắn gọn mà nói, chương trình câu lệnh FFmpeg cần định dạng đối số sau để thực hiện hành động của nó `ffmpeg {1} {2} -i {3} {4} {5}` trong đó:
 
@@ -114,7 +118,7 @@ Ngắn gọn mà nói, chương trình câu lệnh FFmpeg cần định dạng �
 4. tuỳ chọn đầu ra
 5. đường dẫn đầu ra
 
-Các phần 2, 3, 4 và 5 có thể là một hoặc nhiều theo như cầu của bạn.
+Các phần 2, 3, 4 và 5 có thể là một hoặc nhiều theo như yêu cầu của bạn.
 Thật dễ dạng để hiểu những định dạng đối số này trong hành động:
 
 ``` bash
@@ -128,7 +132,7 @@ $ ffmpeg \
 -c:v libvpx-vp9 -c:a libvorbis \ # tuỳ chọn đầu ra
 bunny_1080p_60fps_vp9.webm # đường dẫn đầu ra
 ```
-Câu lệnh này nhận tệp đầu vào định dạng `mp4` chứa 2 luồng dữ liệu (một luồng audio nén với chuẩn `aac` và một luồng video sử dụng chuẩn nén `h264`) và chuyển đổi nó sang định dạng `webm`, cũng thay đổi chuẩn nén audio và video của nó.
+Câu lệnh này nhận tệp đầu vào định dạng `mp4` chứa 2 luồng dữ liệu (một luồng audio nén với chuẩn nén `aac` và một luồng video sử dụng chuẩn nén `h264`) và chuyển đổi nó sang định dạng tệp `webm`, cũng thay đổi chuẩn nén audio và video của nó.
 
 Chúng ta có thể đơn giản hoá các câu lệnh trên nhưng hãy lưu ý rằng FFmpeg sẽ nhận hoặc dự đoán các giá trị mặc định cho bạn.
 Ví dụ, khi bạn gõ `ffmpeg -i input.avi output.mp4`, chuẩn nén audio/video sẽ được sử dụng để xuất `output.mp4` là gì?
@@ -137,15 +141,15 @@ Werner Robitza đã viết một bài hướng dẫn nên đọc về [nén và 
 
 # Những hành động xử lý video phổ biến
 
-Trong khi làm việc với audio/video, chúng ta thường thực hiện một bộ các tác vụ với nội dung đa phương tiện.
+Trong khi làm việc với audio/video, chúng ta thường thực hiện một bộ các tác vụ cụ thể với nội dung đa phương tiện.
 
-## Transcoding
+## Chuyển đổi chuẩn nén - Transcoding
 
 ![transcoding](/img/transcoding.png)
 
 **Là gì?** là hành động chuyển đổi một luồng dữ liệu (có thể là audio hoặc video) từ chuẩn nén này sang chuẩn nén khác.
 
-**Tại sao?** thỉnh thoàng chúng ta bắt gặp trường hợp một vài thiết bị (Tivi, điện thoại thông minh, bẳng điều khiển,...) không hỗ trợ loại X nhưng lại hỗ trợ loại Y và những chuẩn nén mới cung cấp tỉ lệ nén tốt hơn.
+**Tại sao?** thỉnh thoảng chúng ta bắt gặp trường hợp một vài thiết bị (Tivi, điện thoại thông minh, bẳng điều khiển,...) không hỗ trợ loại X nhưng lại hỗ trợ loại Y và những chuẩn nén mới cung cấp tỉ lệ nén tốt hơn.
 
 **Như thế nào?** chuyển đổi một video từ chuẩn nén `H264` (AVC) sang chuẩn nén `H265` (HEVC) bằng cách sau:
 ```bash
@@ -155,11 +159,11 @@ $ ffmpeg \
 bunny_1080p_60fps_h265.mp4
 ```
 
-## Transmuxing
+## Chuyển đổi định dạng tệp - Transmuxing
 
 ![transmuxing](/img/transmuxing.png)
 
-**Là gì?** là hành động chuyển đổi từ một định dạng (container) này sang một định dạng khác.
+**Là gì?** là hành động chuyển đổi từ một định dạng tệp (container) này sang một định dạng tệp khác.
 
 **Tại sao?** thỉng thoảng một vài thiết bị (Tivi, điện thoại thông minh, bẳng điều khiển,...) không hỗ trợ loại X nhưng lại hỗ trợ loại Y và thỉnh thoảng những định dạng mới cung cấp những tính năng hiện đại được yêu cầu.
 
@@ -167,15 +171,15 @@ bunny_1080p_60fps_h265.mp4
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
--c copy \ # just saying to ffmpeg to skip encoding
+-c copy \ # dieu_khien_ffmpeg_bo_qua_buoc_giai_ma_va_ma_hoa
 bunny_1080p_60fps.webm
 ```
 
-## Transrating
+## Thay đổi tốc độ bit - Transrating
 
 ![transrating](/img/transrating.png)
 
-**Là gì?** là hành động thay đổi tốc độ bit, hoặc xuất ra những biến thể (renditions) khác.
+**Là gì?** là hành động thay đổi tốc độ bit của video/audio, hoặc xuất ra những biến thể (renditions) khác.
 
 **Tại sao?** mọi người có thể thử xem video của bạn với kết nối mạng `2G`(edge) bằng cách sử dụng các thiết bị điện thoại thông minh hiệu năng thấp hoặc bằng kết nối Internet `cáp quang` (fiber) trên thiết bị Tivi 4K của họ. Do đó, bạn nên đề xuất nhiều hơn một biến thể của cùng một video với tốc độ bit khác nhau.
 
@@ -189,11 +193,11 @@ bunny_1080p_60fps_transrating_964_3856.mp4
 
 Thông thường chúng ta sẽ cùng sử dụng 2 tác vụ thay đổi tốc độ và thay đổi kích thước. Werner Robitza đã viết một chuỗi các bài viết nên đọc về [điều khiển tỉ lệ trong FFmpeg](http://slhck.info/posts/).
 
-## Transsizing
+## Thay đổi độ phân giải - Transsizing
 
 ![transsizing](/img/transsizing.png)
 
-**Là gi?** là hành động thay đổi từ độ phân giải này sang một độ phân giải khác. Như đã nói trước đó, tác vụ thay đổi kích thước thường đi kèm với tác vụ thay đổi tốc độ.
+**Là gì?** là hành động thay đổi chất lượng video từ độ phân giải này sang một độ phân giải khác. Như đã nói trước đó, tác vụ thay đổi kích thước thường đi kèm với tác vụ thay đổi tốc độ.
 
 **Tại sao?** lý do tương tư như với tác vụ thay đổi tốc độ.
 
@@ -205,7 +209,7 @@ $ ffmpeg \
 bunny_1080p_60fps_transsizing_480.mp4
 ```
 
-## Mở rộng: adaptive-streaming (phát trực tuyến thích ứng)
+## Mở rộng: phát trực tuyến thích ứng (Adaptive-streaming)
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
@@ -252,7 +256,7 @@ Tôi sử dụng nó khi kết hợp với *iMovie* để xuất ra/chỉnh sử
 
 # Tìm hiểu thư viện FFmpeg libav sâu hơn
 
-> Bạn không nên lo lắng quá nhiều về âm thanh và góc nhìn?
+> Bạn không nên lo lắng quá nhiều về âm thanh và hình ảnh?
 > **David Robert Jones**
 
 Bởi vì [FFmpeg](#ffmpeg---command-line) là một câu lệnh rất hữu dụng để làm những tác vụ thiết yếu trên các tệp tin đa phương tiện, bằng cách nào chúng ta có thể sử dụng nó trong chương trình của chúng ta?
@@ -260,10 +264,11 @@ Bởi vì [FFmpeg](#ffmpeg---command-line) là một câu lệnh rất hữu d�
 FFmpeg được [kết hợp bởi một vài thư viện](https://www.ffmpeg.org/doxygen/trunk/index.html) mà có thể tích hợp vào trong chương trình của chúng ta.
 Thông thường, khi bạn cài đặt FFmpeg, nó sẽ tự động cài tất cá các thư viện đó. Tôi sẽ tham chiếu đến tập các thư viện gọi là **FFmpeg libav**.
 
->> Tựa đề này là trang chủ của chuỗi các bài viết của Zed Shaw [Học X sâu hơn](https://learncodethehardway.org/), đặc biệt là cuốn sách của anh ấy Học ngôn ngữ C sâu hơn (Learn C the Hard Way).
+>> Tựa đề này là trang chủ của chuỗi các bài viết của Zed Shaw ["Học X chuyên sâu"](https://learncodethehardway.org/), đặc biệt là cuốn sách của anh ấy "Học ngôn ngữ C chuyên sâu" (Learn C the Hard Way).
 
 ## Chapter 0 - Hello world nổi tiếng
-Chương trình Hello world này thực chất sẽ không hiển thị tin nhắn `"hello world"` trên màn hình terminal :tongue: Thay vào đó, chúng ta sẽ in ra thông tin của video, những thứ như là định dạng (container) của nó, thời lượng, độ phân giải, các kênh audio và cuối cùng, chúng ta sẽ **giải nén một số khung hình (frames) và lưu chúng lại như tệp tin hình ảnh.**
+
+Chương trình Hello world này thực chất sẽ không hiển thị tin nhắn `"hello world"` trên màn hình terminal :tongue: Thay vào đó, chúng ta sẽ in ra thông tin của video, ví dụ như là định dạng tệp (container) của nó, thời lượng, độ phân giải, các kênh audio và cuối cùng, chúng ta sẽ **giải nén một số khung hình (frames) và lưu chúng lại như tệp tin hình ảnh.**
 
 ### Kiến trúc thư viện FFmpeg libav
 
@@ -273,23 +278,23 @@ Trước khi chúng ta bắt đầu viết chương trình, hãy học cách **k
 
 ![kiến trúc thư viện ffmpeg libav - tiến trình giải nén](/img/decoding.png)
 
-Đầu tiên bạn sẽ cần load tệp tin đa phương tiện của bạn vào thành phần gọi là [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (Containter của video còn được gọi là định dạng).
-Nó thực chất không tải toàn bộ tệp tin: nó thường chỉ đọc phần đầu (header) của tệp tin.
+Đầu tiên bạn sẽ cần tải lên một tệp tin đa phương tiện của bạn vào thành phần gọi là [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) (Containter của video còn được gọi là định dạng).
+Nó thực chất không tải toàn bộ tệp tin: nó thường chỉ đọc phần đầu header của tệp tin.
 
-Một khi chúng ta đã tải được tối thiểu **phần đầu (header) của container**, chúng ta có thể truy cập vào các luồng dữ liệu của nó (nghĩ chúng như là phần thô sơ của dữ liệu audio và video).
-Mỗi luồng sẽ được lưu trong thành phần gọi là [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
+Một khi chúng đọc được ít nhất **phần đầu (header) của container**, chúng ta có thể truy cập vào các luồng dữ liệu của nó (nghĩ chúng như là phần thông tin chung của dữ liệu audio và video).
+Mỗi luồng (stream) sẽ được lưu trong thành phần gọi là [`AVStream`](https://ffmpeg.org/doxygen/trunk/structAVStream.html).
 
 > Luồng là một cái tên ưa thích đại điện cho một dòng dữ liệu liên tục.
 
-Giả sử chúng ta có một video chứa hai luồng dữ liệu: một luồng là audio được nén với [chuẩn AAC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) và luồng còn lại là video được nén với [chuẩn H264 (AVC)](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). Từ mỗi luồng, chúng ta có thể giải nén **từng mảnh (slices) của dữ liệu** gọi là gói (packet) mà chúng sẽ được tải vào những phần tử [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
+Giả sử chúng ta có một video chứa hai luồng dữ liệu: một luồng là audio được nén với [chuẩn nén AAC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) và luồng còn lại là video được nén với [chuẩn nén H264 (AVC)](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). Từ mỗi luồng, chúng ta có thể giải nén **từng mảnh (slices) của dữ liệu** gọi là gói (packet) mà chúng sẽ được tải vào những phần tử [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
 
-Phần **dữ liệu trong các gói vẫn được nén ** và để giải nén các gói, chúng ta cần đưa chúng vào [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html) cụ thể.
+Phần **dữ liệu trong các gói vẫn được nén** và để giải nén các gói, chúng ta cần đưa chúng vào [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html) cụ thể.
 
 Thành phần `AVCodec` sẽ giải mã chúng thành phần tử [`AVFrame`](https://ffmpeg.org/doxygen/trunk/structAVFrame.html) và cuối cùng, những phần tử này sẽ cho chúng ta những khung hình gốc không nén. Có thể nhận ra rằng thuật ngữ/tiến trình đều được sử dụng bởi cả luồng audio và video.
 
 ### Các yêu cầu
 
-Bởi có một số người đã [gặp vấn để trong khi biên dịch hoặc chạy các ví dụ mẫu](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **chúng ta sẽ sử dụng [`Docker`](https://docs.docker.com/install/) như là một trường phát triển hay chạy thử,** chúng ta cũng sẽ sử dụng video Chú thỏ lớn (The big buck bunny) vì thế nếu bạn không có nó ở trên máy tính thì hãy chạy lệnh `make fetch_small_bunny_video`.
+Bởi có một số người đã [gặp vấn để trong khi biên dịch hoặc chạy các ví dụ mẫu](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **chúng ta sẽ sử dụng [`Docker`](https://docs.docker.com/install/) như là một trường phát triển hay chạy thử,** chúng ta cũng sẽ sử dụng video "The big buck bunny" vì thế nếu bạn không có nó ở trên máy tính thì hãy chạy lệnh `make fetch_small_bunny_video`.
 
 ### Chương 0 - lướt qua các dòng code
 
@@ -300,7 +305,7 @@ Bởi có một số người đã [gặp vấn để trong khi biên dịch ho�
 
 Chúng ta sẽ bỏ qua một số chi tiết, nhưng đừng lo lắng: [source code có sẵn trên github](/0_hello_world.c).
 
-Chúng ta sẽ khởi tạo vùng nhứo cho thành phần [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) để giữ các thông tin về định dạng (container).
+Chúng ta sẽ khởi tạo vùng nhớ cho thành phần [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) để giữ các thông tin về định dạng tệp (container).
 
 ```c
 AVFormatContext *pFormatContext = avformat_alloc_context();
@@ -341,7 +346,7 @@ Với mỗi luồng, chúng ta sẽ cần [`AVCodecParameters`](https://ffmpeg.o
 AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
 ```
 
-với thuộc tính của chuẩn nén, chúng ta có thể tìm chuẩn nén thích hợp thông qua hàm [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) và tìm bộ giải nén sẵn có với mã định danh của chuẩn nén đó (code id) và trả về một [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html), thành phần biết cách nén (en**CO**de) và giải nén (**DEC**ode) luồng dữ liệu.
+với thuộc tính của chuẩn nén, chúng ta có thể tìm chuẩn nén thích hợp thông qua hàm [`avcodec_find_decoder`](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) và tìm bộ giải nén sẵn có với mã định danh của chuẩn nén đó (code id) và trả về một [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html), thành phần biết cách thức thực hiện nén (en**CO**de) và giải nén (**DEC**ode) luồng dữ liệu.
 ```c
 AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
 ```
@@ -411,7 +416,7 @@ printf(
 );
 ```
 
-Cuối cùng chúng ta có thể lưu lại những khung hình đã được giải nén thành một ảnh xám đơn [simple gray image](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example). Quá trình này rất đơn giản, chúng ta sẽ dùng `pFrame->data` nơi mà index liên quan đến [planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr), chúng ta chỉ cần lấy index `0` (Y) để lưu thành hình ảnh.
+Cuối cùng chúng ta có thể lưu lại những khung hình đã được giải nén thành một ảnh xám đơn giản [simple gray image](https://en.wikipedia.org/wiki/Netpbm_format#PGM_example). Quá trình này rất đơn giản, chúng ta sẽ dùng `pFrame->data` nơi mà index liên quan đến không gian màu [planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr), chúng ta chỉ cần lấy phần tử đầu tiên với chỉ mục `0` (Y) để lưu thành hình ảnh.
 
 ```c
 save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
@@ -501,15 +506,15 @@ LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
 LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 ```
 
-## Chapter 2 - remuxing
+## Chapter 2 - Remuxing
 
-Remuxing là hành động thay đổi từ định dang (container) sang định dạng khác, ví dụ, chúng ta thay đổi một video định dạng [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) sang định dạng [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) mà không gặp nhiều khó khăn khi sử dụng FFmpeg: 
+Remuxing là hành động thay đổi từ định dang tệp (container) này sang định dạng tệp khác, ví dụ, chúng ta thay đổi một video định dạng [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) sang định dạng [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) mà không gặp nhiều khó khăn khi sử dụng FFmpeg: 
 
 ```bash
 ffmpeg input.mp4 -c copy output.ts
 ```
 
-Nó sẽ bóc tách định dạng mp4 nhưng nó sẽ ko giải mã hay mã hoá lại (`-c copy`) và cuối cùng, nó sẽ sắp xếp lại theo định dạng `mpegts`. Nếu bạn không cung cấp định dạng `-f`, ffmpeg sẽ cố gắng đoán nó bằng tên mở rộng của tập tin đầu ra.
+Nó sẽ bóc tách định dạng mp4 nhưng nó sẽ không giải mã hay mã hoá lại (`-c copy`) và cuối cùng, nó sẽ sắp xếp lại theo định dạng `mpegts`. Nếu bạn không cung cấp định dạng `-f`, ffmpeg sẽ cố gắng đoán nó bằng tên mở rộng của tập tin đầu ra.
 
 Cách sử dụng thông thường của FFmpeg hoặc thư viện libav theo kiến trúc/ mẫu hoặc theo trình tự như sau:
 * **[lớp giao thức](https://ffmpeg.org/doxygen/trunk/protocols_8c.html)** - nó nhận `đầu vào`  (có thể là một `tập tin` hoặc là giao thức `rtmp` hay `HTTP`)
@@ -553,7 +558,7 @@ if (!output_format_context) {
 }
 ```
 
-Chúng ta cũng cần sắp xếp lại các luồng stream video, audio và subtitle, vì để giữ chúng, chúng ta sẽ lưu chúng trong mảng.
+Chúng ta cũng cần sắp xếp lại các luồng stream video, audio và subtitle, vì để giữ chúng, chúng ta sẽ lưu thông tin của chúng trong mảng.
 
 ```c
 number_of_streams = input_format_context->nb_streams;
@@ -638,7 +643,7 @@ while (1) {
 }
 ```
 
-Để kết thúc chúng ta cần viết phần kết thúc luồng stream tới tập tien đầu ra với hàm [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13)
+Để kết thúc chúng ta cần viết phần kết thúc luồng stream tới tập tin đầu ra với hàm [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13)
 
 ```c
 av_write_trailer(output_format_context);
@@ -650,7 +655,7 @@ Từ giờ chúng ta đã sẵn sàng để kiểm tra nó và bài kiểm tra �
 make run_remuxing_ts
 ```
 
-Nó đã làm việc!!! Bạn không tin tôi?! Để chắc chắn, chúng ta có thể kiểm tra nó với `ffprobe`
+Nó đã làm việc!!! Bạn không tin tôi ư?! Để chắc chắn, chúng ta có thể kiểm tra nó với `ffprobe`
 
 ```bash
 ffprobe -i remuxed_small_bunny_1080p_60fps.ts
@@ -665,11 +670,11 @@ Input #0, mpegts, from 'remuxed_small_bunny_1080p_60fps.ts':
     Stream #0:1[0x101]: Audio: ac3 ([129][0][0][0] / 0x0081), 48000 Hz, 5.1(side), fltp, 320 kb/s
 ```
 
-Tổng hợp lại những gì chúng ta đã làm theo sơ đồ, chúng ta xem lại bài khởi động [ý tưởng libav hoạt động](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-libav-architecture) và như đã thấy chúng ta bỏ qua phần mã hoá.
+Tổng hợp lại những gì chúng ta đã làm theo sơ đồ, chúng ta xem lại bài mở đầu [ý tưởng libav hoạt động](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-libav-architecture) và như đã thấy chúng ta bỏ qua phần mã hoá.
 
 ![remuxing libav components](/img/remuxing_libav_components.png)
 
-Trước khi kết thúc chương này, tôi muốn chỉ ra phần quan trọng nhất của tiến trình remuxing, **bạn có thể đưa các tuỳ chọn vào bộ muxer**. Hãy nói chúng ta muốn vận chuyển định dạng [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding), để giải quyết vấn đề này, chúng ta cần sử dụng định dạng [fragmented mp4](https://stackoverflow.com/a/35180327) (thình thoảng được giới thiệu như `fmp4`) thay vì MPEF-TS hoặc thuần MPEG-4.
+Trước khi kết thúc chương này, tôi muốn chỉ ra phần quan trọng nhất của tiến trình remuxing, **bạn có thể đưa các tuỳ chọn vào bộ muxer**. Hãy nói chúng ta muốn chuyển định dạng [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding), để giải quyết vấn đề này, chúng ta cần sử dụng định dạng [fragmented mp4](https://stackoverflow.com/a/35180327) (thỉnh thoảng được giới thiệu như `fmp4`) thay vì MPEF-TS hoặc thuần MPEG-4.
 
 Với [việc thực hiện dễ dàng bằng câu lệnh](https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#Fragmenting).
 
@@ -691,15 +696,15 @@ Chúng ta có thể tạo tập tin fragmented mp4:
 make run_remuxing_fragmented_mp4
 ```
 
-Nhưng để chắc chắn rằng tôi không nói dối, bạn có thể sử dụng một công cụ tuyệt vời [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) hoặc [http://mp4parser.com/](http://mp4parser.com/) để nhìn sự khác biệt, đầu tiên tải lên tập tin mp4 "thường"
+Nhưng để chắc chắn rằng tôi không nói dối, bạn có thể sử dụng một công cụ tuyệt vời [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) hoặc [http://mp4parser.com/](http://mp4parser.com/) để nhìn sự khác biệt, đầu tiên tải lên tập tin mp4 "thông thường"
 
 ![mp4 boxes](/img/boxes_normal_mp4.png)
 
-Như bạn thấy, nó chỉ có duy nhất một box `mdat`, **nơi chứa khung hình video và audio**. Giờ hãy tải lên fragmented mp4 để nhìn chúng được chia thành nhiều box `mdat`
+Như bạn thấy, nó chỉ có duy nhất một box `mdat`, **nơi chứa khung hình video và audio**. Giờ hãy tải lên tệp tin định dạng fragmented mp4 để nhìn chúng được chia thành nhiều box `mdat`
 
 ![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
 
-## Chapter 3 - transcoding
+## Chapter 3 - Transcoding
 
 > #### TLDR; chỉ ra bộ mã hoá [code](/3_transcoding.c) và thực thi.
 > ```bash
@@ -708,11 +713,11 @@ Như bạn thấy, nó chỉ có duy nhất một box `mdat`, **nơi chứa khun
 > Chúng ta sẽ bỏ qua chi tiết, nhưng đùng lo lắng: [source code có sẵn trên github](/3_transcoding.c).
 
 
-Ở chương này, chúng ta sẽ tạo một bộ transcoder tối giản nhất, viết bằng ngôn ngữ C, có thể chuyển đổi video từ chuẩn nén H264 thành H265 bằng thư viện **FFmpeg/libav**,cụ thể là  [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, và libavutil.
+Ở chương này, chúng ta sẽ tạo một bộ chuyển đổi chuẩn nén transcoder tối giản nhất, viết bằng ngôn ngữ C, có thể chuyển đổi video từ chuẩn nén H264 thành H265 bằng thư viện **FFmpeg/libav**, cụ thể là  [libavcodec](https://ffmpeg.org/libavcodec.html), libavformat, và libavutil.
 
 ![media transcoding flow](/img/transcoding_flow.png)
 
-> _Tóm tắt nhanh:_ [**AVFormatContext**](https://www.ffmpeg.org/doxygen/trunk/structAVFormatContext.html) là sự trừu tượng cho các định dạng tệp tin đa phương tiện, hay còn gọi là container (ví dự: MKV, MP4, Webm, TS). [**AVStream**](https://www.ffmpeg.org/doxygen/trunk/structAVStream.html) đại diện mỗi loại dữ liệu của định dạng đã cho (ví dụ: audio, video, subtitle, metadata). [**AVPacket**](https://www.ffmpeg.org/doxygen/trunk/structAVPacket.html) là một lát của dữ liệu đã nén chứa trong `AVStream`, nó có thể được giải mã bới [**AVCodec**](https://www.ffmpeg.org/doxygen/trunk/structAVCodec.html) (ví dụ: av1, h264, vp9, hevc), tạo ra dữ liệu gốc gọi là [**AVFrame**](https://www.ffmpeg.org/doxygen/trunk/structAVFrame.html).
+> _Tóm tắt nhanh:_ [**AVFormatContext**](https://www.ffmpeg.org/doxygen/trunk/structAVFormatContext.html) là sự trừu tượng cho các định dạng tệp tin đa phương tiện, hay còn gọi là container (ví dự: MKV, MP4, Webm, TS). [**AVStream**](https://www.ffmpeg.org/doxygen/trunk/structAVStream.html) đại diện mỗi loại dữ liệu của định dạng đã cho (ví dụ: audio, video, subtitle, metadata). [**AVPacket**](https://www.ffmpeg.org/doxygen/trunk/structAVPacket.html) là một phần của dữ liệu đã nén chứa trong `AVStream`, nó có thể được giải mã bới [**AVCodec**](https://www.ffmpeg.org/doxygen/trunk/structAVCodec.html) (ví dụ: av1, h264, vp9, hevc), tạo ra dữ liệu gốc gọi là [**AVFrame**](https://www.ffmpeg.org/doxygen/trunk/structAVFrame.html).
 
 ### Transmuxing
 
@@ -729,7 +734,7 @@ avformat_find_stream_info(avfc, NULL);
 
 Chúng ta sẽ cài đặt một bộ giải mã, `AVFormatContext` sẽ cho phép chúng ta truy cập tất cả thành phần `AVStream` và mỗi thành phần trong số chúng, chúng ta có thể nhận `AVCodec` và tạo `AVCodecContext` chi tiết và cuối cùng chúng ta có thể mở codec nhận được, do đó chúng ta có thể thực hiện quá trình giải mã.  
 
->  The [**AVCodecContext**](https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html) holds data about media configuration such as bit rate, frame rate, sample rate, channels, height, and many others.
+>  Thành phần [**AVCodecContext**](https://www.ffmpeg.org/doxygen/trunk/structAVCodecContext.html) giữ những dữ liệu về cấu hình đa phương tiện như tốc độ bit, tốc độ khung hình, tốc độ mẫu, các kênh, chiều cao và rất nhiều thứ khác nữa.
 
 ```c
 for (int i = 0; i < avfc->nb_streams; i++)
@@ -760,7 +765,7 @@ avformat_write_header(encoder->avfc, &muxer_opts);
 
 ```
 
-Chúng ta nhận `AVPacket` từ bộ giải mã, điều chỉnh timestamp, và ghi gói dữ liệu packet thích hợp với tập tin đầu ra. Mặc dù hàm `av_interleaved_write_frame` nói "ghi khung hình", nhưng chúng ta đang lưu các gói packet. Chúng ta kết thúc quá trình  transmuxing bằnh cách ghi trailer vào tập tin.
+Chúng ta nhận `AVPacket` từ bộ giải mã, điều chỉnh timestamp, và ghi gói dữ liệu packet thích hợp với tập tin đầu ra. Mặc dù hàm `av_interleaved_write_frame` nói "ghi khung hình", nhưng chúng ta đang lưu các gói packet. Chúng ta kết thúc quá trình transmuxing bằng cách ghi phần đuôi (trailer) vào tập tin.
 
 ```c
 AVFrame *input_frame = av_frame_alloc();
@@ -777,7 +782,7 @@ av_write_trailer(encoder_avfc);
 
 ### Transcoding
 
-Phần trước đã đưa ra chương trình transmuxer đơn giản, bây giờ chúng ta sẽ thêm vào khả năng cho tập tin mã hoá, đặc biệt chúng ta sẽ thực hiện transcode video từ `h264` sang `h265
+Phần trước đã đưa ra chương trình transmuxer đơn giản, bây giờ chúng ta sẽ thêm vào khả năng cho tập tin mã hoá, đặc biệt chúng ta sẽ thực hiện transcode video từ `h264` sang `h265`
 
 Sau khi chúng ta chuẩn bị bộ giải mã, trước khi chúng ta sắp xếp các tập tin đầu ra, chúng ta sẽ cài đặt bộ mã hoá.
 
