@@ -1,7 +1,7 @@
 [🇨🇳](/README-cn.md "Simplified Chinese")
 [🇰🇷](/README-ko.md "Korean")
 [🇪🇸](/README-es.md "Spanish")
-[vn](/README-vn.md "Spanish")
+[vn](/README-vn.md "Vietnamese")
 
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
