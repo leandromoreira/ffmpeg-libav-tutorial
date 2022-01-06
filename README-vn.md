@@ -84,7 +84,7 @@ Video này sẽ yêu cầu xấp xỉ bộ nhớ `250.28GB` hoặc băng thông 
 > Một container hay định dạng tệp là một định dạng tập tin mà thông số của nó miêu tả những thành phần khác nhau của dữ liệu và thông tin cũng tồn tại như thế nào trong một tập tin máy tính.
 > https://en.wikipedia.org/wiki/Digital_container_format
 
-Một **tệp tin đơn chứa tất cả các luồng dữ liệu** (bao gồm tất cả audio và video) và nó cũng cung cấp cơ chế đồng bộ và thông tin chung, như tựa đề, độ phân giải,...
+Một **tệp tin chứa tất cả các luồng dữ liệu** (bao gồm tất cả audio và video) và nó cũng cung cấp cơ chế đồng bộ và thông tin chung, như tựa đề, độ phân giải,...
 
 Thông thường chúng ta có thể suy luận định dạng của tệp dữ liệu bằng cách nhìn vào phần mở rộng tên tệp: ví dụ như một tệp có tên `video.webm` là một video sử dụng định dạng container [`webm`](https://www.webmproject.org/).
 
