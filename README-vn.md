@@ -458,7 +458,7 @@ Trong ví dụ cuối cùng, chúng ta đã lưu một số khung hình có th�
 
 Khi chúng ta thiết kế trình phát video, chúng ta cần hiển thị từng khung hình theo một tốc độ nhất định, nếu không, sẽ rất khó để xem video một cách thoải mái bởi vì nó phát rất nhanh hoặc rất chậm.
 
-Do đó, chúng ta cần giới thiệu một số logic để phát mỗi khung hình một cách mượt mà. Để xử lý vấn đề này, mỗi khung hình có một **mốc thời gian hiển thị** (PTS) tăng dần theo hệ số **timebase**, là một số hữu tỉ (trong đó mẫu số được biết đến như **timescale**), chia cho **tốc độ khung hình (fps)** 
+Do đó, chúng ta cần xác định một số logic để phát mỗi khung hình một cách mượt mà. Để xử lý vấn đề này, mỗi khung hình có một **mốc thời gian hiển thị** (PTS) tăng dần theo hệ số **timebase**, là một số hữu tỉ (trong đó mẫu số được biết đến như **timescale**), chia cho **tốc độ khung hình (fps)** 
 
 Sẽ dễ dàng để hiểu khi chúng ta nhìn vào một số ví dụ, hãy thực hiện một số kịch bản.
 
