@@ -119,7 +119,7 @@ Ngắn gọn mà nói, chương trình câu lệnh FFmpeg cần định dạng �
 5. đường dẫn đầu ra
 
 Các phần 2, 3, 4 và 5 có thể là một hoặc nhiều theo như yêu cầu của bạn.
-Thật dễ dạng để hiểu những định dạng đối số này trong hành động:
+Thật dễ dạng để hiểu những định dạng đối số này trong câu lệnh dưới đây:
 
 ``` bash
 # WARNING: kích thước file xấp xỉ 300MB
