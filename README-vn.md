@@ -696,7 +696,7 @@ Chúng ta có thể tạo tập tin fragmented mp4:
 make run_remuxing_fragmented_mp4
 ```
 
-Nhưng để chắc chắn rằng tôi không nói dối, bạn có thể sử dụng một công cụ tuyệt vời [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) hoặc [http://mp4parser.com/](http://mp4parser.com/) để nhìn sự khác biệt, đầu tiên tải lên tập tin mp4 "thông thường"
+Nhưng để chắc chắn rằng tôi không nói dối, bạn có thể sử dụng một công cụ tiện ích [gpac/mp4box.js](http://download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html) hoặc [http://mp4parser.com/](http://mp4parser.com/) để nhìn sự khác biệt, đầu tiên tải lên tập tin mp4 "thông thường"
 
 ![mp4 boxes](/img/boxes_normal_mp4.png)
 
