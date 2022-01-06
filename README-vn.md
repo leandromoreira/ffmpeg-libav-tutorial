@@ -94,7 +94,7 @@ Thông thường chúng ta có thể suy luận định dạng của tệp dữ 
 
 > Một giải pháp hoàn thiện, đa nền tảng để ghi lại, chuyển đổi và phát trực tuyến luồng audio và video.
 
-Để làm việc với truyền thông đa phương tiện, chúng ta có thể sử dụng công cụ/thư viện đáng ngạc nhiên gọi là [FFmpeg](https://www.ffmpeg.org/). Rất có thể bạn đã từng biết/sử dụng nó một cách trực tiếp hoặc gián tiếp (bạn có sử dụng [Chrome?](https://www.chromium.org/developers/design-documents/video)).
+Để làm việc với truyền thông đa phương tiện, chúng ta có thể sử dụng công cụ/thư viện hữu ích gọi là [FFmpeg](https://www.ffmpeg.org/). Rất có thể bạn đã từng biết/sử dụng nó một cách trực tiếp hoặc gián tiếp (bạn có sử dụng [Chrome?](https://www.chromium.org/developers/design-documents/video)).
 
 Nó có một chương trình chạy lệnh gọi là `ffmpeg`, một chương trình mã nhị phân đơn giản nhưng vô cùng mạnh mẽ
 Ví dự như bạn có thể chuyển đổi từ định dạng `mp4` sang định dạng container `avi` chỉ bằng cách gỗ câu lệnh sau:
