@@ -79,7 +79,7 @@ fps = 24 //每秒帧数
 required_storage = tis * fps * toppf * cpp
 ```
 
-这个视频需要大约 250.28G 的存储空间，1.11Gbps 的带宽播放才能不卡顿。这就是我们为什么需要[编解码](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/digital_video_introduction%23how-does-a-video-codec-work)的原因。
+这个视频需要大约 250.28G 的存储空间，1.11Gbps 的带宽播放才能不卡顿。这就是我们为什么需要[编解码](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work)的原因。
 
 ## 容器 - 整合音视频的地方
 
@@ -96,7 +96,7 @@ required_storage = tis * fps * toppf * cpp
 
 > 一个完整的并且跨平台的解决方法，包括对音视频流的转换等。
 
-我们使用一个非常好的工具 [FFmpeg](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/) 去播放多媒体文件。你可能直接或者间接的在使用了（你用过 [Chrome](https://link.zhihu.com/?target=https%3A//www.chromium.org/developers/design-documents/video) 吗？）
+我们使用一个非常好的工具 [FFmpeg](https://www.ffmpeg.org/) 去播放多媒体文件。你可能直接或者间接的在使用了（你用过 [Chrome](https://www.chromium.org/developers/design-documents/video) 吗？）
 
 命令行 ffmpeg 是一个简单而强大的二进制。例如，下面的命令你可以转换一个 mp4 格式到 avi 的格式：
 
@@ -108,7 +108,7 @@ $ ffmpeg -i input.mp4 output.avi
 
 ## **FFmpeg 命令行工具 101**
 
-FFmpeg 有一个非常完善的[文档](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/ffmpeg.html)来说明它如何使用和工作的。
+FFmpeg 有一个非常完善的[文档](https://www.ffmpeg.org/ffmpeg.html)来说明它如何使用和工作的。
 
 为了更简单的理解，FFmpeg 命令行需要下面的几个参数： `ffmpeg {1} {2} -i {3} {4} {5}`:
 
@@ -122,7 +122,8 @@ FFmpeg 有一个非常完善的[文档](https://link.zhihu.com/?target=https%3A/
 下面有一个非常好理解的示例：
 
 ``` bash
-# WARNING: 这个文件大约 300MB
+# 警告：这个文件大约 300MB
+# 译者按：放心，这个网站已经挂了，下载不下来了。不过原作者在代码仓库里保存了一份，可以用仓库里的。
 $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
 
 $ ffmpeg \
@@ -137,7 +138,7 @@ bunny_1080p_60fps_vp9.webm # 输出内容
 
 我们可以简化命令行，因为 FFmpeg 会猜测你的意图。例如我们仅仅输入 ffmpeg -i input.avi output.mp4 ，FFmpeg 意图要编码为 `output.mp4` ？
 
-Werner Robitza 写了一篇 [关于 ffmpeg 编码和编辑的教程](http://slhck.info/ffmpeg-encoding-course/#/)。
+Werner Robitza 写了一篇 [关于 ffmpeg 编码和编辑的教程](https://slhck.info/ffmpeg-encoding-course/#/)。
 
 # 通用的视频操作
 
@@ -194,7 +195,7 @@ $ ffmpeg \
 bunny_1080p_60fps_transrating_964_3856.mp4
 ```
 
-我们通常使用改变码率和改变大小来做编解码。Werner Robitza 写了另外一片文章做参考 关于 [FFmpeg 码率控制](https://link.zhihu.com/?target=http%3A//slhck.info/posts/)。
+我们通常使用改变码率和改变大小来做编解码。Werner Robitza 写了另外一片文章做参考 关于 [FFmpeg 码率控制](https://slhck.info/posts/)。
 
 ## 转分辨率
 
@@ -267,7 +268,7 @@ PS: 我拿了一个例子 [播放自适应 WebM 的说明](http://wiki.webmproje
 
 既然用 [FFmpeg](#ffmpeg---command-line) 做视频的编解码如此强大，我们如何在程序里使用它呢？
 
-FFmpeg 有几个[lib库](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/index.html)是可以集成到我们程序里的。通常在你安装FFmpeg的时候，这些库是自动安装好的。我们将这些库统一叫做 **FFmpeg libav**。
+FFmpeg 有几个[lib库](https://www.ffmpeg.org/doxygen/trunk/index.html)是可以集成到我们程序里的。通常在你安装FFmpeg的时候，这些库是自动安装好的。我们将这些库统一叫做 **FFmpeg libav**。
 
 > 这个标题是对 Zed Shaw 的一系列丛书[学习X的困难](https://learncodethehardway.org/)，特别是学习C语言困难。
 
@@ -286,7 +287,7 @@ FFmpeg 有几个[lib库](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org
 
 ![ffmpeg libav architecture - decoding process](/img/decoding.png)
 
-首先我们需要加载媒体文件到 [AVFormatContext](https://link.zhihu.com/?target=https%3A//ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 组件（容器这个词你认为是文件格式就好了），它并不是真正的加载整个文件，它只是加载了文件头。
+首先我们需要加载媒体文件到 [AVFormatContext](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 组件（容器这个词你认为是文件格式就好了），它并不是真正的加载整个文件，它只是加载了文件头。
 
 首先我们加载了**容器的头信息**，这样我们就可以访问媒体文件流（流只是最基本的音频和视频数据）。
 
@@ -296,7 +297,7 @@ FFmpeg 有几个[lib库](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org
 
 Suppose our video has two streams: an audio encoded with [AAC CODEC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) and a video encoded with [H264 (AVC) CODEC](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC). From each stream we can extract **pieces (slices) of data** called packets that will be loaded into components named [`AVPacket`](https://ffmpeg.org/doxygen/trunk/structAVPacket.html).
 
-假如我们的视频文件有两个流：一个是 [AAC](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Advanced_Audio_Coding) 的音频流，一个是 [H264（AVC）](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/H.264/MPEG-4_AVC)视频流。我们可以从每一个流中提取出数据包，这些数据包将被加载到 [AVPacket](https://link.zhihu.com/?target=https%3A//ffmpeg.org/doxygen/trunk/structAVPacket.html)。
+假如我们的视频文件有两个流：一个是 [AAC](https://en.wikipedia.org/wiki/Advanced_Audio_Coding) 的音频流，一个是 [H264（AVC）](https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC)视频流。我们可以从每一个流中提取出数据包，这些数据包将被加载到 [AVPacket](https://ffmpeg.org/doxygen/trunk/structAVPacket.html)。
 
 **数据包中的数据仍然是被编码的**（也就是被压缩的），我们为了解码这些数据，我们需要将这些数据给到 [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html)。
 
@@ -304,7 +305,7 @@ AVCodec将解压这些数据到 [`AVFrame`](https://ffmpeg.org/doxygen/trunk/str
 
 ### 构建要求
 
-当我们编译或者运行例子时，很多人都会碰到[问题](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/issues%3Futf8%3D%E2%9C%93%26q%3Dis%3Aissue%2Bis%3Aopen%2Bcompiling)，所以我们用docker来构建我们的开发和运行环境。我们将使用一个兔巴哥的视频来作为示例，如果你没有这个视频，你可以运行 `make fetch_small_bunny_video` 来获取。
+当我们编译或者运行例子时，很多人都会碰到[问题](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling)，所以我们用docker来构建我们的开发和运行环境。我们将使用一个兔巴哥的视频来作为示例，如果你没有这个视频，你可以运行 `make fetch_small_bunny_video` 来获取。
 
 ### 章节 0 - 代码一览
 
@@ -314,9 +315,9 @@ AVCodec将解压这些数据到 [`AVFrame`](https://ffmpeg.org/doxygen/trunk/str
 > $ make run_hello
 > ```
 
-我们将跳过一些细节，不过不用担心，我的[代码都在Github上](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/blob/master/0_hello_world.c)。
+我们将跳过一些细节，不过不用担心，我的[代码都在Github上](https://github.com/leandromoreira/ffmpeg-libav-tutorial/blob/master/0_hello_world.c)。
 
-首先我们为 [`AVFormatContext`](http://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 分配内存，我们将获得容器的信息。
+首先我们为 [`AVFormatContext`](https://ffmpeg.org/doxygen/trunk/structAVFormatContext.html) 分配内存，我们将获得容器的信息。
 
 ```c
 AVFormatContext *pFormatContext = avformat_alloc_context();
@@ -324,7 +325,7 @@ AVFormatContext *pFormatContext = avformat_alloc_context();
 
 我们将打开一个文件，利用 `AVFormatContext` 来读取文件的头信息.
 
-打开文件经常用到方法 [`avformat_open_input`](http://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49)。avformat_open_input 需要参数 `AVFormatContext`，媒体文件和两个参数，如果[`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html)为NULL，FFmpeg将猜测格式。[`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) 参数（是一个解封装参数）
+打开文件经常用到方法 [`avformat_open_input`](https://ffmpeg.org/doxygen/trunk/group__lavf__decoding.html#ga31d601155e9035d5b0e7efedc894ee49)。avformat_open_input 需要参数 `AVFormatContext`，媒体文件和两个参数，如果[`AVInputFormat`](https://ffmpeg.org/doxygen/trunk/structAVInputFormat.html)为NULL，FFmpeg将猜测格式。[`AVDictionary`](https://ffmpeg.org/doxygen/trunk/structAVDictionary.html) 参数（是一个解封装参数）
 
 ```c
 avformat_open_input(&pFormatContext, filename, NULL, NULL);
@@ -357,7 +358,7 @@ for (int i = 0; i < pFormatContext->nb_streams; i++)
 AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
 ```
 
-我们通过 [avcodec_find_decoder](https://link.zhihu.com/?target=https%3A//ffmpeg.org/doxygen/trunk/group__lavc__decoding.html%23ga19a0ca553277f019dd5b0fec6e1f9dca) 来查看编码的属性，这个函数不仅能找到codec id，并且会返回 [`AVCodec`](http://ffmpeg.org/doxygen/trunk/structAVCodec.html)类型的变量，这个组件能让我们知道如何去编解码这个流。
+我们通过 [avcodec_find_decoder](https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca) 来查看编码的属性，这个函数不仅能找到codec id，并且会返回 [`AVCodec`](https://ffmpeg.org/doxygen/trunk/structAVCodec.html)类型的变量，这个组件能让我们知道如何去编解码这个流。
 
 ```c
 AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
@@ -428,7 +429,7 @@ printf(
 );
 ```
 
-最后我们可以保存我们解码出来的帧到一个[简单的灰色图片](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Netpbm%23PGM_example)。这个处理过程非常简单，我们使用 `pFrame->data` 查看 [planes Y, Cb and Cr](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/YCbCr) 相关数据，但是我们只取0（Y）数据保存为灰色图片。
+最后我们可以保存我们解码出来的帧到一个[简单的灰色图片](https://en.wikipedia.org/wiki/Netpbm#PGM_example)。这个处理过程非常简单，我们使用 `pFrame->data` 查看 [planes Y, Cb and Cr](https://en.wikipedia.org/wiki/YCbCr) 相关数据，但是我们只取0（Y）数据保存为灰色图片。
 
 ```c
 save_gray_frame(pFrame->data[0], pFrame->linesize[0], pFrame->width, pFrame->height, frame_filename);
@@ -520,7 +521,7 @@ LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 
 ## 章节 2 - 重新封装
 
-重新封装的意思就是把一种格式转换为另一种格式。例如：我们可以用 FFmpeg 把 [MPEG-4](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG-4_Part_14) 转换成 [MPEG-TS](https://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/MPEG_transport_stream)。
+重新封装的意思就是把一种格式转换为另一种格式。例如：我们可以用 FFmpeg 把 [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) 转换成 [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream)。
 
 ```bash
 ffmpeg input.mp4 -c copy output.ts
@@ -541,7 +542,7 @@ ffmpeg input.mp4 -c copy output.ts
 
 ![ffmpeg libav workflow](/img/ffmpeg_libav_workflow.jpeg)
 
-> 这张图非常感谢 [Leixiaohua's](http://leixiaohua1020.github.io/#ffmpeg-development-examples) 和 [Slhck's](https://slhck.info/ffmpeg-encoding-course/#/9) 的工作。
+> 这张图非常感谢 [Leixiaohua's](https://leixiaohua1020.github.io/#ffmpeg-development-examples) 和 [Slhck's](https://slhck.info/ffmpeg-encoding-course/#/9) 的工作。
 
 让我们来用 libav 做一个命令行的操作:  `ffmpeg input.mp4 -c copy output.ts`.
 
@@ -579,7 +580,7 @@ number_of_streams = input_format_context->nb_streams;
 streams_list = av_mallocz_array(number_of_streams, sizeof(*streams_list));
 ```
 
-在我们分配完所需要的内存之后，我们遍历所有的流，然后通过 [avformat_new_stream](https://link.zhihu.com/?target=https%3A//ffmpeg.org/doxygen/trunk/group__lavf__core.html%23gadcb0fd3e507d9b58fe78f61f8ad39827) 为每一个流输入流创建一个对应的输出流。注意我们只针对视频、音频、字幕流。
+在我们分配完所需要的内存之后，我们遍历所有的流，然后通过 [avformat_new_stream](https://ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827) 为每一个流输入流创建一个对应的输出流。注意我们只针对视频、音频、字幕流。
 
 ```c
 for (i = 0; i < input_format_context->nb_streams; i++) {
@@ -657,7 +658,7 @@ while (1) {
 }
 ```
 
-最后我们要使用函数 [av_write_trailer](https://link.zhihu.com/?target=https%3A//ffmpeg.org/doxygen/trunk/group__lavf__encoding.html%23ga7f14007e7dc8f481f054b21614dfec13) 把流的结束内容写到输出的媒体文件中。
+最后我们要使用函数 [av_write_trailer](https://ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga7f14007e7dc8f481f054b21614dfec13) 把流的结束内容写到输出的媒体文件中。
 
 ```c
 av_write_trailer(output_format_context);
@@ -684,13 +685,13 @@ Input #0, mpegts, from 'remuxed_small_bunny_1080p_60fps.ts':
     Stream #0:1[0x101]: Audio: ac3 ([129][0][0][0] / 0x0081), 48000 Hz, 5.1(side), fltp, 320 kb/s
 ```
 
-总结一下我们在图中所做的事情，我们可以回顾一下 [关于libav如何工作的](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial%23ffmpeg-libav-architecture)，但我们跳过了编解码器部分。
+总结一下我们在图中所做的事情，我们可以回顾一下 [关于libav如何工作的](https://github.com/leandromoreira/ffmpeg-libav-tutorial#ffmpeg-libav-architecture)，但我们跳过了编解码器部分。
 
 ![remuxing libav components](/img/remuxing_libav_components.png)
 
-在我们结束这章之前，我想让大家看看重新封装的过程，你可以将选项传递给封装器。比如我们要分发 [MPEG-DASH](https://link.zhihu.com/?target=https%3A//developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources%23MPEG-DASH_Encoding) 格式的文件，我需要使用 [fragmented mp4](https://link.zhihu.com/?target=https%3A//stackoverflow.com/a/35180327)（有时也叫fmp4）代替 TS 或者 MPEG-4。
+在我们结束这章之前，我想让大家看看重新封装的过程，你可以将选项传递给封装器。比如我们要分发 [MPEG-DASH](https://developer.mozilla.org/en-US/docs/Web/Apps/Fundamentals/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#MPEG-DASH_Encoding) 格式的文件，我需要使用 [fragmented mp4](https://stackoverflow.com/a/35180327)（有时也叫fmp4）代替 TS 或者 MPEG-4。
 
-如果用[命令行](https://link.zhihu.com/?target=https%3A//developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE%23Fragmenting)我们可以很简单的实现：
+如果用[命令行](https://developer.mozilla.org/en-US/docs/Web/API/Media_Source_Extensions_API/Transcoding_assets_for_MSE#Fragmenting)我们可以很简单的实现：
 
 ```
 ffmpeg -i non_fragmented.mp4 -movflags frag_keyframe+empty_moov+default_base_moof fragmented.mp4
@@ -710,7 +711,7 @@ ret = avformat_write_header(output_format_context, &opts);
 make run_remuxing_fragmented_mp4
 ```
 
-为了确保我没有骗你们。你可以一个非常棒的工具 [gpac/mp4box.js](https://link.zhihu.com/?target=http%3A//download.tsi.telecom-paristech.fr/gpac/mp4box.js/filereader.html)，或者在线工具 [http://mp4parser.com/](https://link.zhihu.com/?target=http%3A//mp4parser.com/) 去对比差异。
+为了确保我没有骗你们。你可以一个非常棒的工具 [gpac/mp4box.js](https://gpac.github.io/mp4box.js/)，或者在线工具 [http://mp4parser.com/](http://mp4parser.com/) 去对比差异。
 
 ![mp4 boxes](/img/boxes_normal_mp4.png)
 
@@ -726,9 +727,9 @@ make run_remuxing_fragmented_mp4
 > $ make run_transcoding
 > ```
 >
-> 我们跳过一些细节，但是不用担心：[源码在 github 上](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/blob/master/3_transcoding.c) 。
+> 我们跳过一些细节，但是不用担心：[源码在 github 上](https://github.com/leandromoreira/ffmpeg-libav-tutorial/blob/master/3_transcoding.c) 。
 
-在这一章，我们将用 C 写一个编码器，编码器将会用到 **FFmpg/libav** 里的 [libavcodec](https://link.zhihu.com/?target=https%3A//ffmpeg.org/libavcodec.html)，libavformat 和 libavutil 将视频从 H264 转到 H265。
+在这一章，我们将用 C 写一个编码器，编码器将会用到 **FFmpg/libav** 里的 [libavcodec](https://ffmpeg.org/libavcodec.html)，libavformat 和 libavutil 将视频从 H264 转到 H265。
 
 ![media transcoding flow](/img/transcoding_flow.png)
 
@@ -801,10 +802,10 @@ av_write_trailer(encoder_avfc);
 
 在我们解码之后和输出之前，我们将要开始设置我们的编码器。
 
-* 使用 [`avformat_new_stream`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavf__core.html%23gadcb0fd3e507d9b58fe78f61f8ad39827) 来创建编码的 `AVStream`
-* 我们使用 `libx265` 做为 `AVCodec`，[`avcodec_find_encoder_by_name`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__encoding.html%23gaa614ffc38511c104bdff4a3afa086d37)
-* 创建 `AVCodecContext` 作为编码器的基础，[`avcodec_alloc_context3`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__core.html%23gae80afec6f26df6607eaacf39b561c315)
-* 为编解码设置基础属性，并且打开编码器，将参数从上下文复制到流中，使用 [`avcodec_open2`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__core.html%23ga11f785a188d7d9df71621001465b0f1d) 和 [`avcodec_parameters_from_context`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__core.html%23ga0c7058f764778615e7978a1821ab3cfe)
+* 使用 [`avformat_new_stream`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__core.html#gadcb0fd3e507d9b58fe78f61f8ad39827) 来创建编码的 `AVStream`
+* 我们使用 `libx265` 做为 `AVCodec`，[`avcodec_find_encoder_by_name`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__encoding.html#gaa614ffc38511c104bdff4a3afa086d37)
+* 创建 `AVCodecContext` 作为编码器的基础，[`avcodec_alloc_context3`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#gae80afec6f26df6607eaacf39b561c315)
+* 为编解码设置基础属性，并且打开编码器，将参数从上下文复制到流中，使用 [`avcodec_open2`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga11f785a188d7d9df71621001465b0f1d) 和 [`avcodec_parameters_from_context`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__core.html#ga0c7058f764778615e7978a1821ab3cfe)
 
 ```c
 AVRational input_framerate = av_guess_frame_rate(decoder_avfc, decoder_video_avs, NULL);
@@ -838,13 +839,13 @@ avcodec_parameters_from_context(sc->video_avs->codecpar, sc->video_avcc);
 
 为了视频编码，我们需要展开解码的步骤：
 
-- 发送空的 `AVPacket` 给解码器，[`avcodec_send_packet`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html%23ga58bc4bf1e0ac59e27362597e467efff3)
-- 接收解压完的 `AVFrame`，[`avcodec_receive_frame`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html%23ga11e6542c4e66d3028668788a1a74217c)
+- 发送空的 `AVPacket` 给解码器，[`avcodec_send_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga58bc4bf1e0ac59e27362597e467efff3)
+- 接收解压完的 `AVFrame`，[`avcodec_receive_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga11e6542c4e66d3028668788a1a74217c)
 - 开始编码元数据
-- 发送元数据， [`avcodec_send_frame`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html%23ga9395cb802a5febf1f00df31497779169)
-- 基于编码器，接受编码数据， `AVPacket`，[`avcodec_receive_packet`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html%23ga5b8eff59cf259747cf0b31563e38ded6)
-- 设置时间戳， [`av_packet_rescale_ts`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavc__packet.html%23gae5c86e4d93f6e7aa62ef2c60763ea67e)
-- 写到输出文件  [`av_interleaved_write_frame`](https://link.zhihu.com/?target=https%3A//www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html%23ga37352ed2c63493c38219d935e71db6c1)
+- 发送元数据， [`avcodec_send_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga9395cb802a5febf1f00df31497779169)
+- 基于编码器，接受编码数据， `AVPacket`，[`avcodec_receive_packet`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga5b8eff59cf259747cf0b31563e38ded6)
+- 设置时间戳， [`av_packet_rescale_ts`](https://www.ffmpeg.org/doxygen/trunk/group__lavc__packet.html#gae5c86e4d93f6e7aa62ef2c60763ea67e)
+- 写到输出文件  [`av_interleaved_write_frame`](https://www.ffmpeg.org/doxygen/trunk/group__lavf__encoding.html#ga37352ed2c63493c38219d935e71db6c1)
 
 ```c
 AVFrame *input_frame = av_frame_alloc();
@@ -963,4 +964,4 @@ int encode(AVFormatContext *avfc, AVStream *dec_video_avs, AVStream *enc_video_a
   //sp.output_extension = ".webm";
 ```
 
-> 现在，说实话，[这比我想象中的难](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54)，我必须深入理解 [FFmpeg 命令行源码](https://link.zhihu.com/?target=https%3A//github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54%23issuecomment-570746749)，并且做很多测试，我想我肯定搞错了一些细节，因为我为 h264 强制 `force-cfr` 才能工作，并且仍然能看见一些` warning 信息（强制帧类型（5）为真类型（3））`。
+> 现在，说实话，[这比我想象中的难](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54)，我必须深入理解 [FFmpeg 命令行源码](https://github.com/leandromoreira/ffmpeg-libav-tutorial/pull/54#issuecomment-570746749)，并且做很多测试，我想我肯定搞错了一些细节，因为我为 h264 强制 `force-cfr` 才能工作，并且仍然能看见一些` warning 信息（强制帧类型（5）为真类型（3））`。
