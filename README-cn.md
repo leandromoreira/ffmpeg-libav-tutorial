@@ -2,17 +2,17 @@
 
 # 介绍
 
-我在找 [FFmpeg](https://www.ffmpeg.org/) 的 lib 使用的教程，后来我找到了一个 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
+我正在寻找一本可以教我如何将 [FFmpeg](https://www.ffmpeg.org/) 作为库(又名libav)使用的教程，然后我找到了 ["如何1k行代码写一个播放器"](http://dranger.com/ffmpeg/) 的教程。
 
-但不巧的是这个项目已经不维护了，所以我才决定写这个教程。
+但不幸的是这个项目已经过时了，所以我决定写这个教程。
 
-这里大部分的代码都是 c 写的，**但是不用担心**：你可以非常容易的理解它。
+这里的大部分的代码将使用 C，**但是不用担心**：你可以非常容易的理解并把它应用到你喜欢的语言。
 
-FFmpep libav 有很多语言的版本，比如 [python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，即使你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
+FFmpeg libav 有很多针对多种编程语言的绑定，比如 [python](https://mikeboers.github.io/PyAV/)、[go](https://github.com/imkira/go-libav)，即使你对这些语言不熟悉，你仍然可以通过 ffi 来支持它（这是有一个[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)的例子）。
 
-我将会快速的教会大家认识什么是视频、音频、编解码和容器，然后我们尝试使用 FFmpeg 命令行，最终用代码实现一些功能。当然你可以随时跳过这个部分 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
+我们将会从关于什么是视频、音频、编解码和容器的快速入手课程开始，然后我们将参加有关如何使用FFmpeg 命令行的速成课程，最终我们将还要编写代码。当然你也可以直接跳到这个章节 [艰难的学习FFmpeg](#艰难的学习 FFmpeg)。
 
-很多人都说对于传统的TV来说，视频才是互联网的未来，所以FFmpeg是值得学习的一个工具。
+曾有人说互联网视频流才是传统电视的未来，无论如何，FFmpeg都是值得学习的东西。
 
 __目录__
 
@@ -128,7 +128,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # 全局参数
--c:a libfdk_aac -c:v libx264 \ # 输入选项
+-re -stream_loop -1 \ # 输入选项
 -i bunny_1080p_60fps.mp4 \ # 输入内容
 -c:v libvpx-vp9 -c:a libvorbis \ # 输出选项
 bunny_1080p_60fps_vp9.webm # 输出内容

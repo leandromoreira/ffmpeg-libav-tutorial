@@ -128,7 +128,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # global options
--c:a libfdk_aac -c:v libx264 \ # input options
+-re -stream_loop -1 \ # input options
 -i bunny_1080p_60fps.mp4 \ # input url
 -c:v libvpx-vp9 -c:a libvorbis \ # output options
 bunny_1080p_60fps_vp9.webm # output url
