@@ -80,7 +80,7 @@ fps = 24 //cuadros_por_segundo
 almacenamiento_requerido = tis * fps * toppf * cpp
 ```
 
-¡Este video requeriría aproximadamente `250.28GB` de almacenamiento o `1.11 Gbps` de banda ancha! Es por esto que necesitamos hacer uso de un [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+¡Este video requeriría aproximadamente `250.28GB` de almacenamiento o `1.19 Gbps` de banda ancha! Es por esto que necesitamos hacer uso de un [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
 ## Contenedor - un lugar cómodo para audio y video
 
@@ -129,7 +129,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # opciones globales
--c:a libfdk_aac -c:v libx264 \ # opciones de entrada
+-c:a libfdk_aac \ # opciones de entrada
 -i bunny_1080p_60fps.mp4 \ # url de entrada
 -c:v libvpx-vp9 -c:a libvorbis \ # opciones de salida
 bunny_1080p_60fps_vp9.webm # url de salida

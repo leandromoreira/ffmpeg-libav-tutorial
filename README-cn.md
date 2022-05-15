@@ -73,7 +73,7 @@ fps = 24 // 每秒帧数
 required_storage = tis * fps * toppf * cpp
 ```
 
-计算结果显示，此视频需要大约 `250.28G` 的存储空间或 `1.11Gbps` 的带宽。这就是我们为什么需要使用 [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work) 的原因。
+计算结果显示，此视频需要大约 `250.28G` 的存储空间或 `1.19Gbps` 的带宽。这就是我们为什么需要使用 [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work) 的原因。
 
 ## 容器 - 整合音视频
 
