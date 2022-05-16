@@ -73,7 +73,7 @@ fps = 24 //frames_per_second
 required_storage = tis * fps * toppf * cpp
 ```
 
-이 비디오는 거의 `250.28GB`의 저장 용량이 필요하며 `1.11Gbps`의 대역폭이 요구됩니다! 이것이 바로 우리가 [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work)을 사용해야하는 이유입니다.
+이 비디오는 거의 `250.28GB`의 저장 용량이 필요하며 `1.19Gbps`의 대역폭이 요구됩니다! 이것이 바로 우리가 [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work)을 사용해야하는 이유입니다.
 
 ## 컨테이너 - 오디오와 비디오의 안식처
 
@@ -123,7 +123,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # 전역 옵션
--c:a libfdk_aac -c:v libx264 \ # 입력 파일 옵션
+-c:a libfdk_aac \ # 입력 파일 옵션
 -i bunny_1080p_60fps.mp4 \ # 입력 url
 -c:v libvpx-vp9 -c:a libvorbis \ # 출력 파일 옵션
 bunny_1080p_60fps_vp9.webm # 출력 url

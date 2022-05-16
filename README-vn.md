@@ -77,7 +77,7 @@ fps = 24 //so_hinh_tren_giay
 bo_nho_yeu_cau = tis * fps * toppf * cpp
 ```
 
-Video này sẽ yêu cầu xấp xỉ bộ nhớ `250.28GB` hoặc băng thông `1.11Gbps`! Đó là lý do tại sao chúng ta cần dùng [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+Video này sẽ yêu cầu xấp xỉ bộ nhớ `250.28GB` hoặc băng thông `1.19Gbps`! Đó là lý do tại sao chúng ta cần dùng [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
 ## Container - Định dạng tệp lưu trữ chung video và audio
 
@@ -127,7 +127,7 @@ $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/vide
 
 $ ffmpeg \
 -y \ # lựa chọn toàn cục
--c:a libfdk_aac -c:v libx264 \ # tuỳ chọn đầu vào
+-c:a libfdk_aac \ # tuỳ chọn đầu vào
 -i bunny_1080p_60fps.mp4 \ # đường dẫn đầu vào
 -c:v libvpx-vp9 -c:a libvorbis \ # tuỳ chọn đầu ra
 bunny_1080p_60fps_vp9.webm # đường dẫn đầu ra
