@@ -159,14 +159,14 @@ int main(int argc, const char *argv[])
   AVFrame *pFrame = av_frame_alloc();
   if (!pFrame)
   {
-    logging("failed to allocated memory for AVFrame");
+    logging("failed to allocate memory for AVFrame");
     return -1;
   }
   // https://ffmpeg.org/doxygen/trunk/structAVPacket.html
   AVPacket *pPacket = av_packet_alloc();
   if (!pPacket)
   {
-    logging("failed to allocated memory for AVPacket");
+    logging("failed to allocate memory for AVPacket");
     return -1;
   }
 
