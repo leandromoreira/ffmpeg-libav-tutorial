@@ -2,7 +2,7 @@
 
 起初我在寻找可以学习使用FFmpeg库(又名 libav)的教程或书籍，然后找到了名为["如何在1k行代码内实现视频播放器"](http://dranger.com/ffmpeg/)的指南。但该项目已经停止维护，因此我决定撰写此教程。
 
-此项目主要使用C语言开发，**但请不用担心**：项目内容非常通俗易懂。FFmpeg libav具有许多其他语言的实现，例如[python](https://mikeboers.github.io/PyAV/)，[go](https://github.com/imkira/go-libav)。即使其中没有你熟悉的编程语言，仍然可以通过  `ffi` 为它提供支持（这是一个 [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 的示例）。
+此项目主要使用C语言开发，**但请不用担心**：项目内容非常通俗易懂。FFmpeg libav具有许多其他语言的实现，例如[python](https://pyav.org/)，[go](https://github.com/imkira/go-libav)。即使其中没有你熟悉的编程语言，仍然可以通过  `ffi` 为它提供支持（这是一个 [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 的示例）。
 
 下文将会简单介绍什么是视频、音频、编解码和容器，然后我们将尝试使用 FFmpeg 命令行工具，最终使用代码实现一些功能。如果你拥有一些经验，可以随时跳过这些内容，直接阅读 [笨办法学 FFmpeg libav](#笨办法学-FFmpeg-libav) 章节。
 
