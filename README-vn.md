@@ -4,7 +4,7 @@ Tôi đang tìm một bài hướng dẫn về cách sử dụng [FFmpeg](https:
 Thật không may, nó không còn được dùng nữa, vì vậy tôi quyết định viết bài hướng dẫn này.
 
 Tất cả dòng code ở đây được viết bằng ngôn ngữ C, nhưng đừng lo lắng: bạn có thể dễ dàng hiểu và áp dụng nó với ngôn ngữ bạn mong muốn.
-Thư viện FFmpeg libav có rất nhiều biến thể cho các ngôn ngữ khác nhau như [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) và thậm chí nếu ngôn ngữ bạn sử dụng không có thư viện này, bạn vẫn được hỗ trợ qua `ffi` (đây là một ví dụ với [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
+Thư viện FFmpeg libav có rất nhiều biến thể cho các ngôn ngữ khác nhau như [python](https://pyav.org/), [go](https://github.com/imkira/go-libav) và thậm chí nếu ngôn ngữ bạn sử dụng không có thư viện này, bạn vẫn được hỗ trợ qua `ffi` (đây là một ví dụ với [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
 
 Chúng ta sẽ bắt đầu với một tiết học nhanh về video, audio, codec và container; tiếp đó, chúng ta đi vào khoá học sâu hơn về cách sử dụng câu lệnh `FFmpeg` và cuối cùng chúng ta sẽ viết code. Đừng ngại bỏ qua phần đầu và nhảy thẳng đến phần [Tìm hiểu thư viện FFmpeg libav sâu hơn.](#learn-ffmpeg-libav-the-hard-way).
 

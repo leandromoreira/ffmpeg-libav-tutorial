@@ -4,7 +4,7 @@
 하지만 안타깝게도 그건 더이상 관리가 안되고 있어서 이 글을 쓰기로 결정했습니다.
 
 여기서 사용된 대부분의 코드는 C로 되어있습니다. **하지만 걱정하지 마세요**: 당신도 쉽게 이해할 것이고 선호하는 언어에도 적용하실 수 있을겁니다.
-FFmpeg libav는 [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav)와 같은 다양한 언어로 된 많은 bindings을 제공합니다. 만약 사용하려는 언어에 그것이 없다면 `ffi`를 통해서도 지원할 수 있습니다. ([Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 예시)
+FFmpeg libav는 [python](https://pyav.org/), [go](https://github.com/imkira/go-libav)와 같은 다양한 언어로 된 많은 bindings을 제공합니다. 만약 사용하려는 언어에 그것이 없다면 `ffi`를 통해서도 지원할 수 있습니다. ([Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua) 예시)
 
 우리는 비디오와 오디오, 코덱, 컨테이너가 무엇인지에 대해 빠르게 학습한 후에 `FFmpeg` 명령을 어떻게 사용하는지 대해서 파헤쳐보고 마지막으로 코드도 작성해볼 것입니다, [삽질하면서 FFmpeg libav 배우기](#삽질하면서-FFmpeg-libav-배우기) 섹션으로 바로 넘어가셔도 좋습니다.
 

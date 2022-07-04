@@ -7,7 +7,7 @@ Estaba buscando un tutorial/libro que pudiera enseñarme como usar [FFmpeg](http
 
 
 
-La mayoría del código aquí estará en C, **pero no te preocupes**: tu podrás entenderlo fácilmente y aplicarlo a tu lenguaje preferido. FFmpeg libav tiene montones de bindings para muchos lenguajes como [python](https://mikeboers.github.io/PyAV/), [go](https://github.com/imkira/go-libav) e incluso si tu lenguaje no lo tiene, aún es posible darle soporte mediante `ffi` (aquí hay un ejemplo en [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
+La mayoría del código aquí estará en C, **pero no te preocupes**: tu podrás entenderlo fácilmente y aplicarlo a tu lenguaje preferido. FFmpeg libav tiene montones de bindings para muchos lenguajes como [python](https://pyav.org/), [go](https://github.com/imkira/go-libav) e incluso si tu lenguaje no lo tiene, aún es posible darle soporte mediante `ffi` (aquí hay un ejemplo en [Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)).
 
 Empezaremos con una lección rápida de lo que es video, audio, códec y contenedor,  entonces iremos a un curso rápido en como usar el comando `FFmpeg` y finalmente, escribiremos algo de código, siéntete libre de saltar directamente[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg "Secret Leandro´s Easter Egg")a la sección [Aprender FFmpeg libav de la manera difícil.](#learn-ffmpeg-libav-the-hard-way) 
 
