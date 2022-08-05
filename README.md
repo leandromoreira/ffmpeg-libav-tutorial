@@ -754,7 +754,7 @@ We need to prepare the output media file for transmuxing as well, we first **all
 We **set the flag** `AV_CODEC_FLAG_GLOBAL_HEADER` which tells the encoder that it can use the global headers and finally we open the output **file for write** and persist the headers.
 
 ```c
-avformat_alloc_output_context2(&encoder_avfc, NULL, NULL, out_filename);
+avformat_alloc_output_context2(&encoder->avfc, NULL, NULL, out_filename);
 
 AVStream *avs = avformat_new_stream(encoder_avfc, NULL);
 avcodec_parameters_copy(avs->codecpar, decoder_avs->codecpar);
