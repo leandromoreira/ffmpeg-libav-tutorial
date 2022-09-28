@@ -111,6 +111,13 @@ Technically FFmpeg could also be doing a transcoding but we'll talk about that l
 
 FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that does a great job of explaining how it works.
 
+```bash
+# you can also look for the documentation using the command line
+# for instance: here's we're checking what is the avoid_negative_ts parameters and its value
+
+ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
+```
+
 To make things short, the FFmpeg command line program expects the following argument format to perform its actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
 
 1. global options
