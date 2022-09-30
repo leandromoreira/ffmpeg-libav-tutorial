@@ -113,7 +113,6 @@ FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that does
 
 ```bash
 # you can also look for the documentation using the command line
-# for instance: here's we're checking what is the avoid_negative_ts parameters and its value
 
 ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
 ```
