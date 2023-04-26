@@ -2,6 +2,7 @@
 [🇰🇷](/README-ko.md "Korean")
 [🇪🇸](/README-es.md "Spanish")
 [🇻🇳](/README-vn.md "Vietnamese")
+[🇧🇷](/README-pt.md "Portuguese")
 
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
