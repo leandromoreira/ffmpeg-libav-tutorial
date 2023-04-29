@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
   // the component that knows how to enCOde and DECode the stream
   // it's the codec (audio or video)
   // http://ffmpeg.org/doxygen/trunk/structAVCodec.html
-  AVCodec *pCodec = NULL;
+  const AVCodec *pCodec = NULL;
   // this component describes the properties of a codec used by the stream i
   // https://ffmpeg.org/doxygen/trunk/structAVCodecParameters.html
   AVCodecParameters *pCodecParameters =  NULL;
@@ -97,7 +97,7 @@ int main(int argc, const char *argv[])
 
     logging("finding the proper decoder (CODEC)");
 
-    AVCodec *pLocalCodec = NULL;
+    const AVCodec *pLocalCodec = NULL;
 
     // finds the registered decoder for a codec ID
     // https://ffmpeg.org/doxygen/trunk/group__lavc__decoding.html#ga19a0ca553277f019dd5b0fec6e1f9dca
