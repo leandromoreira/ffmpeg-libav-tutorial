@@ -242,7 +242,7 @@ RUN \
         DIR=/tmp/xvid && \
         mkdir -p ${DIR} && \
         cd ${DIR} && \
-        curl -sLO http://downloads.xvid.org/downloads/xvidcore-${XVID_VERSION}.tar.gz && \
+        curl -sLO https://xvid.com/downloads/xvidcore-${XVID_VERSION}.tar.gz && \
         echo ${XVID_SHA256SUM} | sha256sum --check && \
         tar -zx -f xvidcore-${XVID_VERSION}.tar.gz && \
         cd xvidcore/build/generic && \
