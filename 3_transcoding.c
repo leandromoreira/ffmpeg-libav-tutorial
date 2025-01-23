@@ -328,17 +328,25 @@ int main(int argc, char *argv[])
   avformat_alloc_output_context2(&encoder->avfc, NULL, NULL, encoder->filename);
   if (!encoder->avfc) {logging("could not allocate memory for output format");return -1;}
 
-  if (!sp.copy_video) {
-    AVRational input_framerate = av_guess_frame_rate(decoder->avfc, decoder->video_avs, NULL);
-    prepare_video_encoder(encoder, decoder->video_avcc, input_framerate, sp);
-  } else {
-    if (prepare_copy(encoder->avfc, &encoder->video_avs, decoder->video_avs->codecpar)) {return -1;}
-  }
+  for (int i = 0; i < decoder->avfc->nb_streams; i++) {
+    if (decoder->avfc->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) 
+    {
+      if (!sp.copy_video) {
+        AVRational input_framerate = av_guess_frame_rate(decoder->avfc, decoder->video_avs, NULL);
+        prepare_video_encoder(encoder, decoder->video_avcc, input_framerate, sp);
+      } else {
+        if (prepare_copy(encoder->avfc, &encoder->video_avs, decoder->video_avs->codecpar)) {return -1;}
+      }
+    }
 
-  if (!sp.copy_audio) {
-    if (prepare_audio_encoder(encoder, decoder->audio_avcc->sample_rate, sp)) {return -1;}
-  } else {
-    if (prepare_copy(encoder->avfc, &encoder->audio_avs, decoder->audio_avs->codecpar)) {return -1;}
+    if (decoder->avfc->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+    {
+      if (!sp.copy_audio) {
+        if (prepare_audio_encoder(encoder, decoder->audio_avcc->sample_rate, sp)) {return -1;}
+      } else {
+        if (prepare_copy(encoder->avfc, &encoder->audio_avs, decoder->audio_avs->codecpar)) {return -1;}
+      }
+    } 
   }
 
   if (encoder->avfc->oformat->flags & AVFMT_GLOBALHEADER)
@@ -386,8 +394,11 @@ int main(int argc, char *argv[])
       logging("ignoring all non video or audio packets");
     }
   }
-  // TODO: should I also flush the audio encoder?
-  if (encode_video(decoder, encoder, NULL)) return -1;
+
+  if (!sp.copy_video)
+    if (encode_video(decoder, encoder, NULL)) return -1;
+  if (!sp.copy_audio)
+    if (encode_audio(decoder, encoder, NULL)) return -1;
 
   av_write_trailer(encoder->avfc);
 
