@@ -1,0 +1,23 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run hello example
+      run: make make_hello
+    - name: Run remuxing
+      run: make make_remuxing
+    - name: Run transcoding
+      run: make make_transcoding
+      
