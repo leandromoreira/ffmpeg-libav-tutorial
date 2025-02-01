@@ -111,6 +111,12 @@ Acabamos de hacer **remuxing** (remultiplexación) aquí, el cual consiste conve
 
 FFmpeg posee [documentación](https://www.ffmpeg.org/ffmpeg.html) que hace un gran trabajo explicando como funciona.
 
+```bash
+# tambien puedes ver la documentacion usando la linea de comandos
+
+ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
+```
+
 Para ser breves, el comando de línea para FFmpeg espera el siguiente formato de argumentos para realizar sus acciones `ffmpeg {1} {2} -i {3} {4} {5}`, donde:
 
 1. Opciones globales
@@ -189,7 +195,7 @@ bunny_1080p_60fps.webm
 
 **¿Por qué?** las personas intentaran ver tu video usando una conexión `2G` (edge) en un smartphone de baja gama o una conexión por `fibra` a Internet en los televisores a 4K, por lo tanto tu deberías ofrecer mas de una presentación para el mismo video a diferente tasa de bits.
 
-**¿Cómo?** produciendo una presentación con una tasa de bits entre 3856K y 2000K.
+**¿Cómo?** produciendo una presentación con una tasa de bits entre 964K y 3856K.
 
 ```bash
 $ ffmpeg \
