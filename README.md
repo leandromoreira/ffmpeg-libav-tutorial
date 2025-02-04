@@ -749,10 +749,10 @@ Now we're going to set up the decoder, the `AVFormatContext` will give us access
 for (int i = 0; i < avfc->nb_streams; i++)
 {
   AVStream *avs = avfc->streams[i];
-  AVCodec *avc = avcodec_find_decoder(avs->codecpar->codec_id);
-  AVCodecContext *avcc = avcodec_alloc_context3(*avc);
-  avcodec_parameters_to_context(*avcc, avs->codecpar);
-  avcodec_open2(*avcc, *avc, NULL);
+  const AVCodec *avc = avcodec_find_decoder(avs->codecpar->codec_id);
+  AVCodecContext *avcc = avcodec_alloc_context3(avc);
+  avcodec_parameters_to_context(avcc, avs->codecpar);
+  avcodec_open2(avcc, avc, NULL);
 }
 ```
 
