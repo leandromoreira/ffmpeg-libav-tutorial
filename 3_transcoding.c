@@ -122,8 +122,7 @@ int prepare_audio_encoder(StreamingContext *sc, int sample_rate, StreamingParams
 
   int OUTPUT_CHANNELS = 2;
   int OUTPUT_BIT_RATE = 196000;
-  sc->audio_avcc->channels       = OUTPUT_CHANNELS;
-  sc->audio_avcc->channel_layout = av_get_default_channel_layout(OUTPUT_CHANNELS);
+  av_channel_layout_default(&sc->audio_avcc->ch_layout, OUTPUT_CHANNELS);
   sc->audio_avcc->sample_rate    = sample_rate;
   sc->audio_avcc->sample_fmt     = sc->audio_avc->sample_fmts[0];
   sc->audio_avcc->bit_rate       = OUTPUT_BIT_RATE;

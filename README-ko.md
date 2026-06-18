@@ -354,7 +354,7 @@ AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
 if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
   printf("Video Codec: resolution %d x %d", pLocalCodecParameters->width, pLocalCodecParameters->height);
 } else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO) {
-  printf("Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
+  printf("Audio Codec: %d channels, sample rate %d", pLocalCodecParameters->ch_layout.nb_channels, pLocalCodecParameters->sample_rate);
 }
 // general
 printf("\tCodec %s ID %d bit_rate %lld", pLocalCodec->long_name, pLocalCodec->id, pLocalCodecParameters->bit_rate);
